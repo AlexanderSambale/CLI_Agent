@@ -106,6 +106,10 @@ func parseFlags() *pflag.FlagSet {
 	// Define the config file flag
 	flagSet.StringVarP(&configFile, "config", "c", "", "Path to the configuration file (supports YAML, JSON, TOML)")
 
+	// Disable interspersed flags so parsing stops at the first positional argument (subcommand)
+	// This allows subcommands to have their own flags
+	flagSet.SetInterspersed(false)
+
 	// Parse flags from command line
 	if err := flagSet.Parse(os.Args[1:]); err != nil {
 		fmt.Fprintf(os.Stderr, "Error parsing flags: %v\n", err)
