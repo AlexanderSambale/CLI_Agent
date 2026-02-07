@@ -16,22 +16,22 @@ const (
 
 var (
 	// ErrMissingConfig is returned when required configuration is missing
-	ErrMissingConfig = errors.New("missing required configuration")
+	ErrMissingConfig = errors.New(missingRequiredConfiguration)
 
 	// ErrInvalidAPIKey is returned when the API key is invalid
-	ErrInvalidAPIKey = errors.New("invalid API key")
+	ErrInvalidAPIKey = errors.New(invalidApiKey)
 
 	// ErrRateLimited is returned when rate limit is exceeded
-	ErrRateLimited = errors.New("rate limit exceeded")
+	ErrRateLimited = errors.New(rateLimitExceeded)
 
 	// ErrInvalidRequest is returned for invalid requests
-	ErrInvalidRequest = errors.New("invalid request")
+	ErrInvalidRequest = errors.New(invalidRequest)
 
 	// ErrModelNotFound is returned when a model is not found
-	ErrModelNotFound = errors.New("model not found")
+	ErrModelNotFound = errors.New(modelNotFound)
 
 	// ErrTimeout is returned when a request times out
-	ErrTimeout = errors.New("request timeout")
+	ErrTimeout = errors.New(requestTimeout)
 )
 
 // APIError represents an OpenAI API error
