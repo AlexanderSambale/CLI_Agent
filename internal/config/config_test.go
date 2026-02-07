@@ -1,28 +1,11 @@
 package config
 
 import (
+	tc "cli_agent/testdata/test_constants"
 	"errors"
 	"os"
 	"path/filepath"
 	"testing"
-)
-
-// Test constants
-const (
-	testBaseURL     = "https://api.openai.com/v1"
-	testAPIKey      = "sk-test-key"
-	testConfigName  = "Test Config"
-	testVersion     = "1.0.0"
-	testName        = "Test"
-	testModel       = "glm-4.7"
-	testTemperature = 0.7
-	testMaxTokens   = 128000
-	testTopP        = 1.0
-	testTimeout     = 120
-	testMaxRetries  = 3
-	testRetryDelay  = 1000
-	testAltModel    = "gpt-3.5-turbo"
-	testAltTimeout  = 60
 )
 
 // Error message format constants
@@ -41,17 +24,19 @@ func TestLoadValidYAML(t *testing.T) {
 		t.Fatalf("Failed to load valid YAML config: %v", err)
 	}
 
-	if cfg.GetName() != testConfigName {
-		t.Errorf(errExpectedName, testConfigName, cfg.GetName())
+	if cfg.GetName() != tc.TestConfigName {
+		t.Errorf(errExpectedName, tc.TestConfigName, cfg.GetName())
 	}
-	if cfg.GetVersion() != testVersion {
-		t.Errorf(errExpectedVersion, testVersion, cfg.GetVersion())
+	if cfg.GetVersion() != tc.TestVersion {
+		t.Errorf(errExpectedVersion, tc.TestVersion, cfg.GetVersion())
 	}
-	if cfg.GetOpenAIConfig().BaseURL != testBaseURL {
-		t.Errorf(errExpectedBaseURL, testBaseURL, cfg.GetOpenAIConfig().BaseURL)
+
+	openAIConfig := cfg.GetOpenAIConfig()
+	if openAIConfig.BaseURL != tc.TestBaseURL {
+		t.Errorf(errExpectedBaseURL, tc.TestBaseURL, openAIConfig.BaseURL)
 	}
-	if cfg.GetOpenAIConfig().APIKey != testAPIKey {
-		t.Errorf(errExpectedAPIKey, testAPIKey, cfg.GetOpenAIConfig().APIKey)
+	if openAIConfig.APIKey != tc.TestAPIKey {
+		t.Errorf(errExpectedAPIKey, tc.TestAPIKey, openAIConfig.APIKey)
 	}
 }
 
@@ -61,11 +46,13 @@ func TestLoadValidJSON(t *testing.T) {
 		t.Fatalf("Failed to load valid JSON config: %v", err)
 	}
 
-	if cfg.GetName() != testConfigName {
-		t.Errorf(errExpectedName, testConfigName, cfg.GetName())
+	if cfg.GetName() != tc.TestConfigName {
+		t.Errorf(errExpectedName, tc.TestConfigName, cfg.GetName())
 	}
-	if cfg.GetOpenAIConfig().BaseURL != testBaseURL {
-		t.Errorf(errExpectedBaseURL, testBaseURL, cfg.GetOpenAIConfig().BaseURL)
+
+	openAIConfig := cfg.GetOpenAIConfig()
+	if openAIConfig.BaseURL != tc.TestBaseURL {
+		t.Errorf(errExpectedBaseURL, tc.TestBaseURL, openAIConfig.BaseURL)
 	}
 }
 
@@ -75,11 +62,13 @@ func TestLoadValidTOML(t *testing.T) {
 		t.Fatalf("Failed to load valid TOML config: %v", err)
 	}
 
-	if cfg.GetName() != testConfigName {
-		t.Errorf(errExpectedName, testConfigName, cfg.GetName())
+	if cfg.GetName() != tc.TestConfigName {
+		t.Errorf(errExpectedName, tc.TestConfigName, cfg.GetName())
 	}
-	if cfg.GetOpenAIConfig().BaseURL != testBaseURL {
-		t.Errorf(errExpectedBaseURL, testBaseURL, cfg.GetOpenAIConfig().BaseURL)
+
+	openAIConfig := cfg.GetOpenAIConfig()
+	if openAIConfig.BaseURL != tc.TestBaseURL {
+		t.Errorf(errExpectedBaseURL, tc.TestBaseURL, openAIConfig.BaseURL)
 	}
 }
 
@@ -109,11 +98,11 @@ func TestLoadUnsupportedFormat(t *testing.T) {
 
 func TestValidateValidConfig(t *testing.T) {
 	cfg := &Config{
-		Name:    testName,
-		Version: testVersion,
+		Name:    tc.TestName,
+		Version: tc.TestVersion,
 		OpenAI: OpenAIConfig{
-			BaseURL: testBaseURL,
-			APIKey:  testAPIKey,
+			BaseURL: tc.TestBaseURL,
+			APIKey:  tc.TestAPIKey,
 		},
 	}
 
@@ -125,10 +114,10 @@ func TestValidateValidConfig(t *testing.T) {
 
 func TestValidateMissingBaseURL(t *testing.T) {
 	cfg := &Config{
-		Name:    testName,
-		Version: testVersion,
+		Name:    tc.TestName,
+		Version: tc.TestVersion,
 		OpenAI: OpenAIConfig{
-			APIKey: testAPIKey,
+			APIKey: tc.TestAPIKey,
 		},
 	}
 
@@ -143,10 +132,10 @@ func TestValidateMissingBaseURL(t *testing.T) {
 
 func TestValidateMissingAPIKey(t *testing.T) {
 	cfg := &Config{
-		Name:    testName,
-		Version: testVersion,
+		Name:    tc.TestName,
+		Version: tc.TestVersion,
 		OpenAI: OpenAIConfig{
-			BaseURL: testBaseURL,
+			BaseURL: tc.TestBaseURL,
 		},
 	}
 
@@ -161,11 +150,11 @@ func TestValidateMissingAPIKey(t *testing.T) {
 
 func TestValidateDefaultValues(t *testing.T) {
 	cfg := &Config{
-		Name:    testName,
-		Version: testVersion,
+		Name:    tc.TestName,
+		Version: tc.TestVersion,
 		OpenAI: OpenAIConfig{
-			BaseURL: testBaseURL,
-			APIKey:  testAPIKey,
+			BaseURL: tc.TestBaseURL,
+			APIKey:  tc.TestAPIKey,
 		},
 	}
 
@@ -174,44 +163,45 @@ func TestValidateDefaultValues(t *testing.T) {
 		t.Fatalf(errFailedToValidate, err)
 	}
 
+	openAIConfig := cfg.GetOpenAIConfig()
 	// Check HTTP client defaults
-	if cfg.GetOpenAIConfig().HTTPClient.Timeout != testTimeout {
-		t.Errorf("Expected default timeout %d, got %d", testTimeout, cfg.GetOpenAIConfig().HTTPClient.Timeout)
+	if openAIConfig.HTTPClient.Timeout != tc.TestTimeout {
+		t.Errorf("Expected default timeout %d, got %d", tc.TestTimeout, openAIConfig.HTTPClient.Timeout)
 	}
-	if cfg.GetOpenAIConfig().HTTPClient.MaxRetries != testMaxRetries {
-		t.Errorf("Expected default max_retries %d, got %d", testMaxRetries, cfg.GetOpenAIConfig().HTTPClient.MaxRetries)
+	if openAIConfig.HTTPClient.MaxRetries != tc.TestMaxRetries {
+		t.Errorf("Expected default max_retries %d, got %d", tc.TestMaxRetries, openAIConfig.HTTPClient.MaxRetries)
 	}
-	if cfg.GetOpenAIConfig().HTTPClient.RetryDelay != testRetryDelay {
-		t.Errorf("Expected default retry_delay %d, got %d", testRetryDelay, cfg.GetOpenAIConfig().HTTPClient.RetryDelay)
+	if openAIConfig.HTTPClient.RetryDelay != tc.TestRetryDelay {
+		t.Errorf("Expected default retry_delay %d, got %d", tc.TestRetryDelay, openAIConfig.HTTPClient.RetryDelay)
 	}
 
 	// Check defaults
-	if cfg.GetOpenAIConfig().Defaults.Model != testModel {
-		t.Errorf("Expected default model '%s', got '%s'", testModel, cfg.GetOpenAIConfig().Defaults.Model)
+	if openAIConfig.Defaults.Model != tc.TestModel {
+		t.Errorf("Expected default model '%s', got '%s'", tc.TestModel, openAIConfig.Defaults.Model)
 	}
-	if cfg.GetOpenAIConfig().Defaults.Temperature != testTemperature {
-		t.Errorf("Expected default temperature %f, got %f", testTemperature, cfg.GetOpenAIConfig().Defaults.Temperature)
+	if openAIConfig.Defaults.Temperature != tc.TestTemperature {
+		t.Errorf("Expected default temperature %f, got %f", tc.TestTemperature, openAIConfig.Defaults.Temperature)
 	}
-	if cfg.GetOpenAIConfig().Defaults.MaxTokens != testMaxTokens {
-		t.Errorf("Expected default max_tokens %d, got %d", testMaxTokens, cfg.GetOpenAIConfig().Defaults.MaxTokens)
+	if openAIConfig.Defaults.MaxTokens != tc.TestMaxTokens {
+		t.Errorf("Expected default max_tokens %d, got %d", tc.TestMaxTokens, openAIConfig.Defaults.MaxTokens)
 	}
-	if cfg.GetOpenAIConfig().Defaults.TopP != testTopP {
-		t.Errorf("Expected default top_p %f, got %f", testTopP, cfg.GetOpenAIConfig().Defaults.TopP)
+	if openAIConfig.Defaults.TopP != tc.TestTopP {
+		t.Errorf("Expected default top_p %f, got %f", tc.TestTopP, openAIConfig.Defaults.TopP)
 	}
 }
 
 func TestValidatePartialConfig(t *testing.T) {
 	cfg := &Config{
-		Name:    testName,
-		Version: testVersion,
+		Name:    tc.TestName,
+		Version: tc.TestVersion,
 		OpenAI: OpenAIConfig{
-			BaseURL: testBaseURL,
-			APIKey:  testAPIKey,
+			BaseURL: tc.TestBaseURL,
+			APIKey:  tc.TestAPIKey,
 			HTTPClient: &HTTPClient{
-				Timeout: testAltTimeout, // Override default
+				Timeout: tc.TestAltTimeout, // Override default
 			},
 			Defaults: &Defaults{
-				Model: testAltModel, // Override default
+				Model: tc.TestAltModel, // Override default
 			},
 		},
 	}
@@ -221,20 +211,21 @@ func TestValidatePartialConfig(t *testing.T) {
 		t.Fatalf("Failed to validate partial config: %v", err)
 	}
 
+	openAIConfig := cfg.GetOpenAIConfig()
 	// Check that overridden values are preserved
-	if cfg.GetOpenAIConfig().HTTPClient.Timeout != testAltTimeout {
-		t.Errorf("Expected timeout %d, got %d", testAltTimeout, cfg.GetOpenAIConfig().HTTPClient.Timeout)
+	if openAIConfig.HTTPClient.Timeout != tc.TestAltTimeout {
+		t.Errorf("Expected timeout %d, got %d", tc.TestAltTimeout, openAIConfig.HTTPClient.Timeout)
 	}
-	if cfg.GetOpenAIConfig().Defaults.Model != testAltModel {
-		t.Errorf("Expected model '%s', got '%s'", testAltModel, cfg.GetOpenAIConfig().Defaults.Model)
+	if openAIConfig.Defaults.Model != tc.TestAltModel {
+		t.Errorf("Expected model '%s', got '%s'", tc.TestAltModel, openAIConfig.Defaults.Model)
 	}
 
 	// Check that defaults are still set for non-overridden values
-	if cfg.GetOpenAIConfig().HTTPClient.MaxRetries != 0 {
-		t.Errorf("Expected max_retries %d, got %d", 0, cfg.GetOpenAIConfig().HTTPClient.MaxRetries)
+	if openAIConfig.HTTPClient.MaxRetries != 0 {
+		t.Errorf("Expected max_retries %d, got %d", 0, openAIConfig.HTTPClient.MaxRetries)
 	}
-	if cfg.GetOpenAIConfig().Defaults.Temperature != 0 {
-		t.Errorf("Expected temperature %f, got %f", 0.0, cfg.GetOpenAIConfig().Defaults.Temperature)
+	if openAIConfig.Defaults.Temperature != 0 {
+		t.Errorf("Expected temperature %f, got %f", 0.0, openAIConfig.Defaults.Temperature)
 	}
 }
 
