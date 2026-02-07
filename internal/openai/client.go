@@ -19,11 +19,11 @@ const (
 )
 
 type CLIClient interface {
-	GetChatService() openai.ChatService
 	GetCLIConfig() config.CLIConfig
 	GetLogger() logger.CLILogger
 	GetModel(ctx context.Context, modelID string) (*openai.Model, error)
 	ListModels(ctx context.Context) ([]openai.Model, error)
+	NewCompletion(ctx context.Context, body openai.ChatCompletionNewParams, opts ...option.RequestOption) (res *openai.ChatCompletion, err error)
 }
 
 // Client wraps the OpenAI client with additional functionality
@@ -37,8 +37,8 @@ func (c *Client) GetCLIConfig() config.CLIConfig {
 	return c.config
 }
 
-func (c *Client) GetChatService() openai.ChatService {
-	return c.Client.Chat
+func (c *Client) NewCompletion(ctx context.Context, body openai.ChatCompletionNewParams, opts ...option.RequestOption) (res *openai.ChatCompletion, err error) {
+	return c.Client.Chat.Completions.New(ctx, body, opts...)
 }
 
 func (c *Client) GetLogger() logger.CLILogger {

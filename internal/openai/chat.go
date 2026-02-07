@@ -49,8 +49,7 @@ func CreateChatCompletion(c CLIClient, ctx context.Context, req *ChatCompletionR
 	}
 
 	// Make the API call
-	chatService := c.GetChatService()
-	completion, err := chatService.Completions.New(ctx, params)
+	completion, err := c.NewCompletion(ctx, params)
 	if err != nil {
 		c.GetLogger().Errorf("Chat completion failed: %v", err)
 		return nil, fmt.Errorf("failed to create chat completion: %w", err)
