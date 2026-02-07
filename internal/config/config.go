@@ -8,6 +8,15 @@ import (
 	"github.com/spf13/viper"
 )
 
+// CLIConfig defines the interface for CLI configuration
+type CLIConfig interface {
+	GetName() string
+	GetVersion() string
+	GetDebug() bool
+	GetVerbose() bool
+	GetOpenAIConfig() OpenAIConfig
+}
+
 // Config represents the application configuration
 type Config struct {
 	// General application settings
@@ -22,6 +31,31 @@ type Config struct {
 	OpenAI OpenAIConfig `mapstructure:"openai"`
 }
 
+// GetName returns the application name
+func (c *Config) GetName() string {
+	return c.Name
+}
+
+// GetVersion returns the application version
+func (c *Config) GetVersion() string {
+	return c.Version
+}
+
+// GetDebug returns the debug setting
+func (c *Config) GetDebug() bool {
+	return c.Settings.Debug
+}
+
+// GetVerbose returns the verbose setting
+func (c *Config) GetVerbose() bool {
+	return c.Settings.Verbose
+}
+
+// GetOpenAIConfig returns the OpenAI configuration
+func (c *Config) GetOpenAIConfig() OpenAIConfig {
+	return c.OpenAI
+}
+
 // OpenAIConfig represents OpenAI-specific configuration
 type OpenAIConfig struct {
 	// Required fields
@@ -30,7 +64,7 @@ type OpenAIConfig struct {
 
 	// HTTP client options
 	HTTPClient struct {
-		Timeout    int `mapstructure:"timeout"`    // in seconds
+		Timeout    int `mapstructure:"timeout"` // in seconds
 		MaxRetries int `mapstructure:"max_retries"`
 		RetryDelay int `mapstructure:"retry_delay"` // in milliseconds
 	} `mapstructure:"http_client"`
@@ -45,10 +79,10 @@ type OpenAIConfig struct {
 }
 
 // Load reads and parses the configuration file from the given path
-func Load(configPath string) (*Config, error) {
+func Load(configPath string) (CLIConfig, error) {
 	// Validate that the config file exists
 	if _, err := os.Stat(configPath); os.IsNotExist(err) {
-		return nil, fmt.Errorf("configuration file not found: %s", configPath)
+		return nil, fmt.Errorf("configuration file not found: %s: %w", configPath, err)
 	}
 
 	// Get the file extension to determine the format
