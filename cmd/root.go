@@ -69,7 +69,7 @@ func initializeClient() (openai.CLIClient, error) {
 	}
 
 	// Validate the configuration
-	if err := cfg.Validate(); err != nil {
+	if err := config.ValidateAndSetDefaults(cfg); err != nil {
 		return nil, fmt.Errorf("configuration validation failed: %w", err)
 	}
 

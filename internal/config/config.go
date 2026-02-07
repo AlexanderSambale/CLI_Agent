@@ -15,7 +15,7 @@ type CLIConfig interface {
 	GetDebug() bool
 	GetVerbose() bool
 	GetOpenAIConfig() OpenAIConfig
-	Validate() error
+	SetOpenAIConfig(OpenAIConfig)
 }
 
 // Config represents the application configuration
@@ -59,13 +59,17 @@ func (c *Config) GetOpenAIConfig() OpenAIConfig {
 	return c.OpenAI
 }
 
+func (c *Config) SetOpenAIConfig(openAIConfig OpenAIConfig) {
+	c.OpenAI = openAIConfig
+}
+
 // OpenAIConfig represents OpenAI-specific configuration
 type OpenAIConfig struct {
 	// Required fields
-	BaseURL    string     `mapstructure:"base_url"`
-	APIKey     string     `mapstructure:"api_key"`
-	HTTPClient HTTPClient `mapstructure:"http_client"`
-	Defaults   Defaults   `mapstructure:"defaults"`
+	BaseURL    string      `mapstructure:"base_url"`
+	APIKey     string      `mapstructure:"api_key"`
+	HTTPClient *HTTPClient `mapstructure:"http_client"`
+	Defaults   *Defaults   `mapstructure:"defaults"`
 }
 
 // HTTP client options
@@ -78,9 +82,9 @@ type HTTPClient struct {
 // Default request parameters
 type Defaults struct {
 	Model       string  `mapstructure:"model"`
-	Temperature float64 `mapstructure:"temperature"`
+	Temperature float64 `mapstructure:"temperature"` // 0.0 – 2.0
 	MaxTokens   int     `mapstructure:"max_tokens"`
-	TopP        float64 `mapstructure:"top_p"`
+	TopP        float64 `mapstructure:"top_p"` // 0.0 – 1.0
 }
 
 // Load reads and parses the configuration file from the given path
@@ -126,7 +130,8 @@ func Load(configPath string) (CLIConfig, error) {
 }
 
 // Validate checks if the configuration is valid
-func (c *Config) Validate() error {
+// and sets Default values if not specified
+func ValidateAndSetDefaults(c CLIConfig) error {
 	config := c.GetOpenAIConfig()
 
 	// Validate OpenAI configuration
@@ -138,29 +143,16 @@ func (c *Config) Validate() error {
 	}
 
 	// Set default values for HTTP client if not specified
-	if config.HTTPClient.Timeout == 0 {
-		config.HTTPClient.Timeout = 120 // Default 2 minutes
-	}
-	if config.HTTPClient.MaxRetries == 0 {
-		config.HTTPClient.MaxRetries = 3
-	}
-	if config.HTTPClient.RetryDelay == 0 {
-		config.HTTPClient.RetryDelay = 1000 // Default 1 second
+	if config.HTTPClient == nil {
+		config.HTTPClient = &HTTPClient{Timeout: 120, MaxRetries: 3, RetryDelay: 1000}
 	}
 
 	// Set default values for request parameters if not specified
-	if config.Defaults.Model == "" {
-		config.Defaults.Model = "gpt-4o"
+	if config.Defaults == nil {
+		config.Defaults = &Defaults{Model: "glm-4.7", Temperature: 0.7, MaxTokens: 128000, TopP: 1.0}
 	}
-	if config.Defaults.Temperature == 0 {
-		config.Defaults.Temperature = 0.7
-	}
-	if config.Defaults.MaxTokens == 0 {
-		config.Defaults.MaxTokens = 2048
-	}
-	if config.Defaults.TopP == 0 {
-		config.Defaults.TopP = 1.0
-	}
+
+	c.SetOpenAIConfig(config)
 
 	return nil
 }
