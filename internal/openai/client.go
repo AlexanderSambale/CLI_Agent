@@ -72,7 +72,7 @@ func NewClient(cfg config.CLIConfig, log logger.CLILogger) (CLIClient, error) {
 
 	return &Client{
 		Client: client,
-		config: &config.Config{Name: cfg.GetName(), Version: cfg.GetVersion()},
+		config: &config.Config{Name: cfg.GetName(), Version: cfg.GetVersion(), Settings: config.SettingsConfig{Debug: cfg.GetDebug(), Verbose: cfg.GetVerbose()}, OpenAI: cfg.GetOpenAIConfig()},
 		logger: &logger.Logger{Verbose: log.GetVerbose(), Debug: log.GetDebug(), Output: log.GetOutput()},
 	}, nil
 }
