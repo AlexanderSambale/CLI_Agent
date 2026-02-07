@@ -1,0 +1,21 @@
+name = "Test Config"
+version = "1.0.0"
+
+[settings]
+debug = false
+verbose = true
+
+[openai]
+base_url = "https://api.openai.com/v1"
+api_key = "sk-test-key"
+
+[openai.http_client]
+timeout = 120
+max_retries = 3
+retry_delay = 1000
+
+[openai.defaults]
+model = "gpt-4"
+temperature = 0.7
+max_tokens = 2048
+top_p = 1.0

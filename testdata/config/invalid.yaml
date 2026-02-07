@@ -1,0 +1,5 @@
+name: "Invalid Config"
+version: "1.0.0"
+openai:
+  base_url: "https://api.openai.com/v1"
+  # Missing api_key - this will fail validation
