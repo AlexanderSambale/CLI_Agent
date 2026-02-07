@@ -17,7 +17,6 @@ type CLIClient interface {
 	GetChatService() openai.ChatService
 	GetCLIConfig() config.CLIConfig
 	GetLogger() logger.CLILogger
-	CreateChatCompletion(ctx context.Context, req *ChatCompletionRequest) (*ChatCompletionResponse, error)
 	GetModel(ctx context.Context, modelID string) (*openai.Model, error)
 	ListModels(ctx context.Context) ([]openai.Model, error)
 }

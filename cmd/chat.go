@@ -83,7 +83,7 @@ func ExecuteChat(client openai.CLIClient, args []string) error {
 
 	// Execute
 	ctx := context.Background()
-	resp, err := client.CreateChatCompletion(ctx, req)
+	resp, err := openai.CreateChatCompletion(client, ctx, req)
 	if err != nil {
 		return err
 	}

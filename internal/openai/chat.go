@@ -27,7 +27,7 @@ type ChatCompletionResponse struct {
 }
 
 // CreateChatCompletion creates a chat completion
-func (c *Client) CreateChatCompletion(ctx context.Context, req *ChatCompletionRequest) (*ChatCompletionResponse, error) {
+func CreateChatCompletion(c CLIClient, ctx context.Context, req *ChatCompletionRequest) (*ChatCompletionResponse, error) {
 	c.GetLogger().Verbosef("Creating chat completion with model: %s", req.Model)
 	c.GetLogger().Verbosef("Number of messages: %d", len(req.Messages))
 
@@ -52,13 +52,13 @@ func (c *Client) CreateChatCompletion(ctx context.Context, req *ChatCompletionRe
 	chatService := c.GetChatService()
 	completion, err := chatService.Completions.New(ctx, params)
 	if err != nil {
-		c.logger.Errorf("Chat completion failed: %v", err)
+		c.GetLogger().Errorf("Chat completion failed: %v", err)
 		return nil, fmt.Errorf("failed to create chat completion: %w", err)
 	}
 
-	c.logger.Verbosef("Chat completion created successfully")
-	c.logger.Verbosef("Response ID: %s", completion.ID)
-	c.logger.Verbosef("Tokens used: %d (prompt) + %d (completion) = %d (total)",
+	c.GetLogger().Verbosef("Chat completion created successfully")
+	c.GetLogger().Verbosef("Response ID: %s", completion.ID)
+	c.GetLogger().Verbosef("Tokens used: %d (prompt) + %d (completion) = %d (total)",
 		completion.Usage.PromptTokens,
 		completion.Usage.CompletionTokens,
 		completion.Usage.TotalTokens)
