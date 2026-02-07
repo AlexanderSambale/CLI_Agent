@@ -61,7 +61,7 @@ func Execute() error {
 }
 
 // initializeClient loads the configuration and initializes the OpenAI client
-func initializeClient() (*openai.Client, error) {
+func initializeClient() (openai.CLIClient, error) {
 	fmt.Printf("Loading configuration from: %s\n", configFile)
 	cfg, err := config.Load(configFile)
 	if err != nil {
@@ -76,10 +76,10 @@ func initializeClient() (*openai.Client, error) {
 	fmt.Println("Configuration loaded successfully!")
 
 	// Create logger
-	log := logger.NewLogger(cfg.Settings.Verbose, cfg.Settings.Debug)
+	log := logger.NewLogger(cfg.GetVerbose(), cfg.GetDebug())
 
 	// Initialize OpenAI client
-	client, err := openai.NewClient(&cfg.OpenAI, log)
+	client, err := openai.NewClient(cfg, log)
 	if err != nil {
 		return nil, fmt.Errorf("failed to initialize OpenAI client: %w", err)
 	}
@@ -88,7 +88,7 @@ func initializeClient() (*openai.Client, error) {
 }
 
 // executeSubcommand executes the specified subcommand
-func executeSubcommand(client *openai.Client, subcommand string, args []string) error {
+func executeSubcommand(client openai.CLIClient, subcommand string, args []string) error {
 	switch subcommand {
 	case "chat":
 		return ExecuteChat(client, args)

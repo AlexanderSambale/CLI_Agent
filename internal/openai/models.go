@@ -4,12 +4,12 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/openai/openai-go/v3"
+	openaiapi "github.com/openai/openai-go/v3"
 )
 
 // ListModels lists all available models
-func (c *Client) ListModels(ctx context.Context) ([]openai.Model, error) {
-	c.logger.Verbose("Listing available models")
+func (c *Client) ListModels(ctx context.Context) ([]openaiapi.Model, error) {
+	c.GetLogger().Verbosef("Listing available models")
 
 	models, err := c.Client.Models.List(ctx)
 	if err != nil {
@@ -22,8 +22,8 @@ func (c *Client) ListModels(ctx context.Context) ([]openai.Model, error) {
 }
 
 // GetModel retrieves a specific model
-func (c *Client) GetModel(ctx context.Context, modelID string) (*openai.Model, error) {
-	c.logger.Verbosef("Retrieving model: %s", modelID)
+func (c *Client) GetModel(ctx context.Context, modelID string) (*openaiapi.Model, error) {
+	c.GetLogger().Verbosef("Retrieving model: %s", modelID)
 
 	model, err := c.Models.Get(ctx, modelID)
 	if err != nil {

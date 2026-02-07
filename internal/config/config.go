@@ -15,6 +15,7 @@ type CLIConfig interface {
 	GetDebug() bool
 	GetVerbose() bool
 	GetOpenAIConfig() OpenAIConfig
+	Validate() error
 }
 
 // Config represents the application configuration

@@ -28,8 +28,8 @@ type ChatCompletionResponse struct {
 
 // CreateChatCompletion creates a chat completion
 func (c *Client) CreateChatCompletion(ctx context.Context, req *ChatCompletionRequest) (*ChatCompletionResponse, error) {
-	c.logger.Verbosef("Creating chat completion with model: %s", req.Model)
-	c.logger.Verbosef("Number of messages: %d", len(req.Messages))
+	c.GetLogger().Verbosef("Creating chat completion with model: %s", req.Model)
+	c.GetLogger().Verbosef("Number of messages: %d", len(req.Messages))
 
 	// Build request parameters
 	params := openai.ChatCompletionNewParams{
@@ -49,7 +49,8 @@ func (c *Client) CreateChatCompletion(ctx context.Context, req *ChatCompletionRe
 	}
 
 	// Make the API call
-	completion, err := c.Chat.Completions.New(ctx, params)
+	chatService := c.GetChatService()
+	completion, err := chatService.Completions.New(ctx, params)
 	if err != nil {
 		c.logger.Errorf("Chat completion failed: %v", err)
 		return nil, fmt.Errorf("failed to create chat completion: %w", err)

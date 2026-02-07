@@ -18,8 +18,7 @@ var (
 	chatSystem      string
 )
 
-// ChatCmd represents the chat command
-func ChatCmd(client *openai.Client) *pflag.FlagSet {
+func GetChatCmdFlagSet() *pflag.FlagSet {
 	flagSet := pflag.NewFlagSet("chat", pflag.ExitOnError)
 
 	flagSet.StringVarP(&chatModel, "model", "m", "", "Model to use for chat completion")
@@ -32,8 +31,8 @@ func ChatCmd(client *openai.Client) *pflag.FlagSet {
 }
 
 // ExecuteChat runs the chat command
-func ExecuteChat(client *openai.Client, args []string) error {
-	flagSet := ChatCmd(client)
+func ExecuteChat(client openai.CLIClient, args []string) error {
+	flagSet := GetChatCmdFlagSet()
 	if err := flagSet.Parse(args); err != nil {
 		return err
 	}
@@ -52,25 +51,25 @@ func ExecuteChat(client *openai.Client, args []string) error {
 	messages = append(messages, openaiapi.UserMessage(prompt))
 
 	// Use config defaults if not specified
-	cfg := client.GetConfig()
+	cfg := client.GetCLIConfig()
 	model := chatModel
 	if model == "" {
-		model = cfg.Defaults.Model
+		model = cfg.GetOpenAIConfig().Defaults.Model
 	}
 
 	temperature := chatTemperature
 	if temperature == 0 {
-		temperature = cfg.Defaults.Temperature
+		temperature = cfg.GetOpenAIConfig().Defaults.Temperature
 	}
 
 	maxTokens := chatMaxTokens
 	if maxTokens == 0 {
-		maxTokens = cfg.Defaults.MaxTokens
+		maxTokens = cfg.GetOpenAIConfig().Defaults.MaxTokens
 	}
 
 	topP := chatTopP
 	if topP == 0 {
-		topP = cfg.Defaults.TopP
+		topP = cfg.GetOpenAIConfig().Defaults.TopP
 	}
 
 	// Create request

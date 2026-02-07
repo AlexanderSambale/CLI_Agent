@@ -27,7 +27,7 @@ func ModelsCmd() *pflag.FlagSet {
 }
 
 // ExecuteModels runs the models command
-func ExecuteModels(client *openai.Client, args []string) error {
+func ExecuteModels(client openai.CLIClient, args []string) error {
 	flagSet := ModelsCmd()
 	if err := flagSet.Parse(args); err != nil {
 		return err
@@ -42,7 +42,7 @@ func ExecuteModels(client *openai.Client, args []string) error {
 	return listModels(client, ctx)
 }
 
-func listModels(client *openai.Client, ctx context.Context) error {
+func listModels(client openai.CLIClient, ctx context.Context) error {
 	models, err := client.ListModels(ctx)
 	if err != nil {
 		return err
@@ -58,7 +58,7 @@ func listModels(client *openai.Client, ctx context.Context) error {
 	return nil
 }
 
-func getModelDetails(client *openai.Client, ctx context.Context, modelID string) error {
+func getModelDetails(client openai.CLIClient, ctx context.Context, modelID string) error {
 	model, err := client.GetModel(ctx, modelID)
 	if err != nil {
 		return err

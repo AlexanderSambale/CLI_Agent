@@ -5,6 +5,15 @@ import (
 	"fmt"
 )
 
+const (
+	missingRequiredConfiguration = "missing required configuration"
+	invalidApiKey                = "invalid API key"
+	rateLimitExceeded            = "rate limit exceeded"
+	invalidRequest               = "invalid request"
+	modelNotFound                = "model not found"
+	requestTimeout               = "request timeout"
+)
+
 var (
 	// ErrMissingConfig is returned when required configuration is missing
 	ErrMissingConfig = errors.New("missing required configuration")
