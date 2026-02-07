@@ -13,6 +13,11 @@ import (
 	"github.com/openai/openai-go/v3/option"
 )
 
+const (
+	BaseURLIsRequired = "base_url is required"
+	ApiKeyIsRequired  = "api_key is required"
+)
+
 type CLIClient interface {
 	GetChatService() openai.ChatService
 	GetCLIConfig() config.CLIConfig
@@ -42,23 +47,26 @@ func (c *Client) GetLogger() logger.CLILogger {
 
 // NewClient creates a new OpenAI client with the given configuration
 func NewClient(cfg config.CLIConfig, log logger.CLILogger) (CLIClient, error) {
+	OpenAIConfig := cfg.GetOpenAIConfig()
+	BaseURL := OpenAIConfig.BaseURL
+	APIKey := OpenAIConfig.APIKey
 	// Validate required fields
-	if cfg.GetOpenAIConfig().BaseURL == "" {
-		return nil, fmt.Errorf("base_url is required")
+	if BaseURL == "" {
+		return nil, fmt.Errorf(BaseURLIsRequired)
 	}
-	if cfg.GetOpenAIConfig().APIKey == "" {
-		return nil, fmt.Errorf("api_key is required")
+	if APIKey == "" {
+		return nil, fmt.Errorf(ApiKeyIsRequired)
 	}
 
 	// Configure HTTP client
 	httpClient := &http.Client{
-		Timeout: time.Duration(cfg.GetOpenAIConfig().HTTPClient.Timeout) * time.Second,
+		Timeout: time.Duration(OpenAIConfig.HTTPClient.Timeout) * time.Second,
 	}
 
 	// Build client options
 	options := []option.RequestOption{
-		option.WithAPIKey(cfg.GetOpenAIConfig().APIKey),
-		option.WithBaseURL(cfg.GetOpenAIConfig().BaseURL),
+		option.WithAPIKey(APIKey),
+		option.WithBaseURL(BaseURL),
 		option.WithHTTPClient(httpClient),
 	}
 
@@ -68,11 +76,11 @@ func NewClient(cfg config.CLIConfig, log logger.CLILogger) (CLIClient, error) {
 	)
 
 	log.Verbosef("OpenAI client initialized successfully")
-	log.Verbosef("Base URL: %s", cfg.GetOpenAIConfig().BaseURL)
+	log.Verbosef("Base URL: %s", BaseURL)
 
 	return &Client{
 		Client: client,
-		config: &config.Config{Name: cfg.GetName(), Version: cfg.GetVersion(), Settings: config.SettingsConfig{Debug: cfg.GetDebug(), Verbose: cfg.GetVerbose()}, OpenAI: cfg.GetOpenAIConfig()},
+		config: &config.Config{Name: cfg.GetName(), Version: cfg.GetVersion(), Settings: config.SettingsConfig{Debug: cfg.GetDebug(), Verbose: cfg.GetVerbose()}, OpenAI: OpenAIConfig},
 		logger: &logger.Logger{Verbose: log.GetVerbose(), Debug: log.GetDebug(), Output: log.GetOutput()},
 	}, nil
 }
