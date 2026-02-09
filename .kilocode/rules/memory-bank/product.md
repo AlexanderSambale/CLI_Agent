@@ -54,6 +54,7 @@ Future capabilities (planned):
 - **Customizable Parameters**: Override default model, temperature, max tokens, and top_p via command-line flags
 - **System Messages**: Set context with system messages for chat completions
 - **Verbose Logging**: Configurable logging levels for debugging and monitoring
+- **Bash Command Parser**: Extract bash commands from LLM responses using `<do>...</do>` tags (ready for integration)
 
 ## Planned Capabilities
 

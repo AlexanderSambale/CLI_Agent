@@ -2,7 +2,7 @@
 
 ## Current State
 
-The project has evolved from initial planning to a functional CLI client for OpenAI API with comprehensive testing infrastructure. The core infrastructure is complete with:
+The project has evolved from initial planning to a functional CLI client for OpenAI API with comprehensive testing infrastructure and initial agent capabilities. The core infrastructure is complete with:
 
 - Go module initialized with dependencies (viper, pflag, openai-go/v3, gomock)
 - CLI framework implemented using pflag
@@ -13,6 +13,8 @@ The project has evolved from initial planning to a functional CLI client for Ope
 - Complete unit and integration test suite
 - Mock client generation using GoMock
 - Test fixtures and helper functions
+- Bash command parser for extracting commands from LLM responses
+- Comprehensive testing plans and implementation plans
 
 ## Recent Changes
 
@@ -28,20 +30,26 @@ The project has evolved from initial planning to a functional CLI client for Ope
 - Generated mock client using GoMock for unit testing
 - Created test fixtures and constants for consistent test data
 - Added test helpers for CLI command execution
+- Implemented bash command parser ([`internal/parser/parser.go`](internal/parser/parser.go:1)) with comprehensive test coverage
+- Created detailed implementation plans for bash parser and mock responses integration
+- Created comprehensive testing plan document
+- Added GoMock dependency for advanced mocking capabilities
 
 ## Next Steps
 
 The project is in a functional state with core features and testing infrastructure implemented. Potential areas for expansion:
 
 1. Implement conversation history management
-2. Implement bash tool execution for agent capabilities
+2. Implement bash tool execution for agent capabilities (parser is ready)
 3. Add additional test coverage for edge cases
 4. Implement retry logic in HTTP client
+5. Integrate mock responses into test files (plan documented)
+6. Create mock server for integration tests (plan documented)
 
 ## Project Status
 
-**Phase**: Testing Infrastructure Complete
-**Progress**: ~75% - Basic CLI client functional with comprehensive tests, agent features not yet implemented
+**Phase**: Agent Infrastructure Development
+**Progress**: ~80% - Basic CLI client functional with comprehensive tests, bash parser implemented, agent features partially implemented
 **Blockers**: None identified
 
 ## Key Features Implemented
@@ -56,3 +64,6 @@ The project is in a functional state with core features and testing infrastructu
 - Integration tests for CLI commands
 - Mock client generation using GoMock
 - Test fixtures and helper functions
+- Bash command parser with `<do>...</do>` tag support
+- Comprehensive test coverage for parser (100+ test cases)
+- Detailed implementation and testing plans

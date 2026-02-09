@@ -23,6 +23,9 @@ CLI_Agent/
 │   │   └── chat_test.go  # Chat completion unit tests
 │   ├── logger/           # Verbose logging utilities
 │   │   └── logger.go     # Structured logging implementation
+│   ├── parser/           # Bash command parser for agent
+│   │   ├── parser.go     # Bash command extraction from LLM responses
+│   │   └── parser_test.go # Parser unit tests
 │   └── mocks/            # Generated mock clients for testing
 │       └── client_mock.go # GoMock generated mock
 ├── tests/                # Integration tests and test helpers
@@ -67,6 +70,12 @@ CLI_Agent/
    - DEBUG: Debug-level information for troubleshooting (configurable)
    - ERROR: Error messages and stack traces
 
+5. **Parser** ([`internal/parser/`](internal/parser/)): Bash command extraction for agent capabilities
+   - [`parser.go`](internal/parser/parser.go): Extracts bash commands from LLM responses using `<do>...</do>` tags
+   - Supports multi-line commands and complex bash syntax
+   - Comprehensive error handling for edge cases
+   - 100+ test cases covering various bash command patterns
+
 ## Key Technical Decisions
 
 - **Language**: Go (Golang) 1.25.5 for performance and simplicity
@@ -75,6 +84,8 @@ CLI_Agent/
 - **OpenAI Client**: openai-go/v3 official library
 - **Logging**: Custom structured logger with configurable verbosity
 - **Error Handling**: Custom error types with wrapping for better error context
+- **Bash Parser**: Custom regex-based parser using `<do>...</do>` tags for bash command extraction
+- **Mocking**: GoMock (go.uber.org/mock) for advanced unit testing capabilities
 
 ## Design Patterns
 
@@ -82,6 +93,7 @@ CLI_Agent/
 - **Wrapper Pattern**: OpenAI client wrapper for additional functionality
 - **Builder Pattern**: Configuration building with validation
 - **Strategy Pattern**: Different configuration formats (YAML, JSON, TOML)
+- **Parser Pattern**: Bash command extraction from LLM responses using custom tags
 
 ## Critical Implementation Paths
 
@@ -97,6 +109,7 @@ CLI_Agent/
 - Configuration: [`internal/config/config.go`](internal/config/config.go:1)
 - OpenAI client: [`internal/openai/`](internal/openai/)
 - Logging: [`internal/logger/logger.go`](internal/logger/logger.go:1)
+- Bash parser: [`internal/parser/parser.go`](internal/parser/parser.go:1)
 - Example configuration: [`example.yaml`](example.yaml:1)
 
 ## Data Flow
@@ -139,4 +152,4 @@ openai:
 
 ## Notes
 
-The architecture is designed for extensibility. The OpenAI client wrapper can be extended to support additional API endpoints (embeddings, images, etc.). The configuration system can easily accommodate new fields. The logging system provides flexibility for different verbosity levels during development and production.
+The architecture is designed for extensibility. The OpenAI client wrapper can be extended to support additional API endpoints (embeddings, images, etc.). The configuration system can easily accommodate new fields. The logging system provides flexibility for different verbosity levels during development and production. The bash parser is ready for integration with agent capabilities to execute commands extracted from LLM responses.

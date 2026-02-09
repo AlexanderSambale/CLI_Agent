@@ -37,6 +37,15 @@
   - Configurable verbosity levels
   - Output to stderr
 
+### Bash Command Parser
+
+- **Custom Parser** ([`internal/parser/parser.go`](internal/parser/parser.go:1)): Bash command extraction from LLM responses
+  - Uses `<do>...</do>` tags for command extraction
+  - Supports multi-line commands and complex bash syntax
+  - Comprehensive error handling for edge cases
+  - 100+ test cases covering various bash command patterns
+  - No external dependencies (uses standard library)
+
 ## Development Setup
 
 ### Prerequisites
@@ -68,7 +77,7 @@
 ## Technical Constraints
 
 - Must be cross-platform compatible (Linux, macOS, Windows)
-- Minimal external dependencies (only 3 direct dependencies)
+- Minimal external dependencies (only 4 direct dependencies)
 - Configuration files should be human-readable and editable
 - CLI should follow standard Unix conventions
 - Error messages should be clear and actionable
@@ -82,6 +91,7 @@
 - `github.com/spf13/pflag v1.0.10` - Command-line flag parsing
 - `github.com/spf13/viper v1.21.0` - Configuration management
 - `github.com/openai/openai-go/v3 v3.17.0` - OpenAI API client
+- `go.uber.org/mock v0.6.0` - Mock generation framework for unit testing
 
 ### Indirect Dependencies
 
@@ -150,4 +160,4 @@ Note: Retry logic is configured but not yet implemented in the client wrapper.
 
 ## Notes
 
-The technology stack is stable and well-maintained. All dependencies are actively maintained and have good community support. The project uses minimal external dependencies to keep the binary size small and reduce attack surface. Future additions may include template engines, code analysis tools, and testing frameworks as the agent capabilities expand.
+The technology stack is stable and well-maintained. All dependencies are actively maintained and have good community support. The project uses minimal external dependencies to keep the binary size small and reduce attack surface. Future additions may include template engines, code analysis tools, and testing frameworks as the agent capabilities expand. The bash parser is implemented without external dependencies using Go's standard library, making it lightweight and efficient.
