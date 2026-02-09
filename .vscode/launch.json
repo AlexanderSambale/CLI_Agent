@@ -28,6 +28,22 @@
         "--file",
         "${input:file}"
       ],
+    },
+    {
+      "name": "Debug Integration Tests",
+      "type": "go",
+      "request": "launch",
+      "mode": "test",
+      "program": "${workspaceFolder}/tests/integration",
+      "args": [
+        "-test.run",
+        "TestIntegrationModels"
+      ],
+      "buildFlags": "-tags=integration",
+      "env": {
+        "GO_ENV": "test",
+        "PROJECT_ROOT": "${workspaceFolder}"
+      }
     }
   ],
   "inputs": [
