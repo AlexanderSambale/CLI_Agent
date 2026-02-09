@@ -12,14 +12,32 @@ CLI_Agent/
 │   └── models.go          # Models API command
 ├── internal/              # Private application code
 │   ├── config/           # Configuration parsing and validation
-│   │   └── config.go     # Config loading and validation logic
+│   │   ├── config.go     # Config loading and validation logic
+│   │   └── config_test.go # Config unit tests
 │   ├── openai/           # OpenAI client wrapper
 │   │   ├── client.go     # Client initialization and configuration
 │   │   ├── chat.go       # Chat completions API
 │   │   ├── models.go     # Models API
-│   │   └── errors.go     # Error handling and custom error types
-│   └── logger/           # Verbose logging utilities
-│       └── logger.go     # Structured logging implementation
+│   │   ├── errors.go     # Error handling and custom error types
+│   │   ├── client_test.go # Client unit tests
+│   │   └── chat_test.go  # Chat completion unit tests
+│   ├── logger/           # Verbose logging utilities
+│   │   └── logger.go     # Structured logging implementation
+│   └── mocks/            # Generated mock clients for testing
+│       └── client_mock.go # GoMock generated mock
+├── tests/                # Integration tests and test helpers
+│   ├── helpers.go        # Test helper functions
+│   └── integration/      # Integration tests
+│       ├── chat_test.go  # Chat command integration tests
+│       └── models_test.go # Models command integration tests
+├── testdata/             # Test fixtures and constants
+│   ├── config/           # Test configuration files
+│   │   ├── valid.yaml    # Valid YAML config
+│   │   ├── valid.json    # Valid JSON config
+│   │   ├── valid.toml    # Valid TOML config
+│   │   └── invalid.yaml  # Invalid config for testing
+│   └── test_constants/   # Test constants
+│       └── constants.go  # Shared test constants
 ├── example.yaml          # Example configuration file
 ├── go.mod                # Go module definition
 └── main.go               # Application entry point

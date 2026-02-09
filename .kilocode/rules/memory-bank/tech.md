@@ -52,7 +52,8 @@
 ### Development Tools
 - **gofmt**: Standard Go formatter (recommended)
 - **golangci-lint**: Linting tool (recommended, not yet configured)
-- **Testing**: go test with potential additions (not yet implemented)
+- **Testing**: go test with comprehensive test suite
+- **GoMock** (go.uber.org/mock/gomock): Mock generation framework for unit testing
 
 ## Technical Constraints
 
@@ -114,9 +115,11 @@
 - API errors wrapped with custom [`APIError`](internal/openai/errors.go:29) type
 
 ### Testing Strategy
-- Unit tests for core logic (not yet implemented)
-- Integration tests for CLI commands (not yet implemented)
-- Example-based tests for code generation (not yet implemented)
+- Unit tests for core logic (config, client, chat packages)
+- Integration tests for CLI commands (chat, models)
+- Mock-based unit tests using GoMock
+- Test fixtures and constants for consistent test data
+- Test helpers for CLI command execution
 
 ## HTTP Client Configuration
 
