@@ -25,7 +25,7 @@ func (c *Client) ListModels(ctx context.Context) ([]openaiapi.Model, error) {
 func (c *Client) GetModel(ctx context.Context, modelID string) (*openaiapi.Model, error) {
 	c.GetLogger().Verbosef("Retrieving model: %s", modelID)
 
-	model, err := c.Models.Get(ctx, modelID)
+	model, err := c.Client.Models.Get(ctx, modelID)
 	if err != nil {
 		c.logger.Errorf("Failed to retrieve model %s: %v", modelID, err)
 		return nil, fmt.Errorf("failed to retrieve model: %w", err)
