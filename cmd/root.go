@@ -66,7 +66,6 @@ func Execute() error {
 
 // initializeClient loads the configuration and initializes the OpenAI client
 func initializeClient() (openai.CLIClient, error) {
-	fmt.Printf("Loading configuration from: %s\n", configFile)
 	cfg, err := config.Load(configFile)
 	if err != nil {
 		return nil, fmt.Errorf("failed to load configuration: %w", err)
@@ -77,10 +76,10 @@ func initializeClient() (openai.CLIClient, error) {
 		return nil, fmt.Errorf("configuration validation failed: %w", err)
 	}
 
-	fmt.Println("Configuration loaded successfully!")
-
 	// Create logger
 	log := logger.NewLogger(cfg.GetVerbose(), cfg.GetDebug())
+	log.Verbosef("Loading configuration from: %s\n", configFile)
+	log.Verbosef("Configuration loaded successfully!")
 
 	// Initialize OpenAI client
 	client, err := openai.NewClient(cfg, log)
