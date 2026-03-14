@@ -54,18 +54,23 @@ func (e *executor) Execute(ctx context.Context, command string) (*Result, error)
 	cmdCtx, cancel := context.WithTimeout(ctx, e.timeout)
 	defer cancel()
 
-	// Build the full command
-	var fullCommand string
+	// Build the command with proper argument splitting
+	var cmd *exec.Cmd
 	if e.engine == "" {
-		// No engine prefix, just run bash -c
-		fullCommand = fmt.Sprintf("bash -c %s", quoteCommand(command))
+		// No engine prefix, just run bash -c with the command
+		cmd = exec.CommandContext(cmdCtx, "bash", "-c", command)
 	} else {
-		// Prepend engine prefix
-		fullCommand = fmt.Sprintf("%s %s", e.engine, quoteCommand(command))
+		// Prepend engine prefix and split into arguments
+		parts := strings.Fields(e.engine)
+		if len(parts) == 0 {
+			// Fallback to bash if engine is empty after splitting
+			cmd = exec.CommandContext(cmdCtx, "bash", "-c", command)
+		} else {
+			// First part is the command, rest are arguments
+			args := append(parts[1:], command)
+			cmd = exec.CommandContext(cmdCtx, parts[0], args...)
+		}
 	}
-
-	// Create command with bash
-	cmd := exec.CommandContext(cmdCtx, fullCommand)
 
 	// Capture stdout and stderr
 	var stdout, stderr bytes.Buffer
@@ -102,17 +107,4 @@ func (e *executor) Execute(ctx context.Context, command string) (*Result, error)
 
 	result.ExitCode = 0
 	return result, nil
-}
-
-// quoteCommand properly quotes a command for shell execution
-func quoteCommand(command string) string {
-	// If the command is already quoted, return it as-is
-	if (strings.HasPrefix(command, "\"") && strings.HasSuffix(command, "\"")) ||
-		(strings.HasPrefix(command, "'") && strings.HasSuffix(command, "'")) {
-		return command
-	}
-
-	// Otherwise, wrap in double quotes and escape existing double quotes
-	escaped := strings.ReplaceAll(command, "\"", "\\\"")
-	return fmt.Sprintf("\"%s\"", escaped)
 }

@@ -308,49 +308,6 @@ func TestExecuteCommandNotFound(t *testing.T) {
 	}
 }
 
-func TestQuoteCommand(t *testing.T) {
-	tests := []struct {
-		name     string
-		command  string
-		expected string
-	}{
-		{
-			name:     "simple command",
-			command:  "ls -la",
-			expected: "\"ls -la\"",
-		},
-		{
-			name:     "command with double quotes",
-			command:  `echo "hello"`,
-			expected: `echo "hello"`,
-		},
-		{
-			name:     "command with single quotes",
-			command:  `echo 'hello'`,
-			expected: `echo 'hello'`,
-		},
-		{
-			name:     "command with escaped quotes",
-			command:  `echo "hello \"world\""`,
-			expected: `echo "hello \"world\""`,
-		},
-		{
-			name:     "command with special characters",
-			command:  `echo $HOME`,
-			expected: `"echo \$HOME"`,
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			result := quoteCommand(tt.command)
-			if result != tt.expected {
-				t.Errorf("quoteCommand() = %v, want %v", result, tt.expected)
-			}
-		})
-	}
-}
-
 func TestExecuteMultiLineCommand(t *testing.T) {
 	exec := NewExecutor(&config.ExecutionConfig{
 		Engine:  "",
