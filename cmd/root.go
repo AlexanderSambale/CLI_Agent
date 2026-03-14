@@ -14,6 +14,10 @@ import (
 var (
 	// configFile is the path to the configuration file
 	configFile string
+	// baseURL is the OpenAI API base URL
+	baseURL string
+	// apiKey is the OpenAI API key
+	apiKey string
 )
 
 // Execute runs the root command
@@ -79,6 +83,18 @@ func initializeClient() (openai.CLIClient, error) {
 		return nil, fmt.Errorf("failed to load configuration: %w", err)
 	}
 
+	// Override config with command-line flags if provided
+	if baseURL != "" || apiKey != "" {
+		openAIConfig := cfg.GetOpenAIConfig()
+		if baseURL != "" {
+			openAIConfig.BaseURL = baseURL
+		}
+		if apiKey != "" {
+			openAIConfig.APIKey = apiKey
+		}
+		cfg.SetOpenAIConfig(openAIConfig)
+	}
+
 	// Validate the configuration
 	if err := config.ValidateAndSetDefaults(cfg); err != nil {
 		return nil, fmt.Errorf("configuration validation failed: %w", err)
@@ -121,6 +137,10 @@ func parseFlags() *pflag.FlagSet {
 
 	// Define the config file flag
 	flagSet.StringVarP(&configFile, "config", "c", "", "Path to the configuration file (supports YAML, JSON, TOML)")
+	// Define the base URL flag
+	flagSet.StringVar(&baseURL, "base-url", "", "OpenAI API base URL (overrides config file)")
+	// Define the API key flag
+	flagSet.StringVar(&apiKey, "api-key", "", "OpenAI API key (overrides config file)")
 
 	// Disable interspersed flags so parsing stops at the first positional argument (subcommand)
 	// This allows subcommands to have their own flags
