@@ -46,6 +46,35 @@ func RunCLICommand(t *testing.T, command string, args ...string) (stdout, stderr
 	return stdout, stderr, exitCode
 }
 
+// RunCLICommandWithStdin executes the CLI binary with stdin input and returns output and exit code
+func RunCLICommandWithStdin(t *testing.T, command string, stdin string, args ...string) (stdout, stderr string, exitCode int) {
+	t.Helper()
+
+	cmd := exec.Command(command, args...)
+
+	var stdoutBuf, stderrBuf bytes.Buffer
+	cmd.Stdout = &stdoutBuf
+	cmd.Stderr = &stderrBuf
+
+	// Set stdin
+	cmd.Stdin = strings.NewReader(stdin)
+
+	err := cmd.Run()
+
+	stdout = stdoutBuf.String()
+	stderr = stderrBuf.String()
+
+	if err != nil {
+		if exitErr, ok := err.(*exec.ExitError); ok {
+			exitCode = exitErr.ExitCode()
+		} else {
+			t.Fatalf("Command failed with unexpected error: %v", err)
+		}
+	}
+
+	return stdout, stderr, exitCode
+}
+
 func GetRootAndCLIAgent(t *testing.T) (string, string) {
 	root := os.Getenv("PROJECT_ROOT")
 	t.Log(root)
