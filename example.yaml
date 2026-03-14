@@ -24,3 +24,17 @@ openai:
     temperature: 0.7
     max_tokens: 2048
     top_p: 1.0
+
+execution:
+  # Command execution engine (optional, default: empty for local execution)
+  # Examples:
+  #   - Local execution: ""
+  #   - Docker: "docker run --rm -v $(pwd):/workspace -w /workspace ubuntu:latest bash -c"
+  #   - Podman: "podman run --rm --userns keep-id alpine:latest sh -c"
+  #   - Docker Compose: "docker compose exec -T app bash -c"
+  #   - Custom wrapper: "my-wrapper --timeout 30 --verbose bash -c"
+  engine: ""
+
+  # Command execution timeout in seconds (optional, default: 30)
+  # 0 will be set to maximum which is several years
+  timeout: 30
