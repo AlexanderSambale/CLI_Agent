@@ -25,5 +25,5 @@ engine = ""
 timeout = "30s"
 
 [agent]
-system = "You are a helpful coding assistant."
+system = "You are a helpful coding assistant. Use <do>...</do> tags to wrap bash commands you want to execute."
 max_turns = 5

@@ -6,6 +6,7 @@ import (
 	"os"
 	"path/filepath"
 	"testing"
+	"time"
 )
 
 // Error message format constants
@@ -14,12 +15,16 @@ const (
 	errExpectedBaseURL  = "Expected base_url '%s', got '%s'"
 	errExpectedAPIKey   = "Expected api_key '%s', got '%s'"
 	errExpectedVersion  = "Expected version '%s', got '%s'"
+	errExpectedEngine   = "Expected engine '%s', got '%s'"
+	errExpectedTimeout  = "Expected timeout %v, got %v"
+	errExpectedSystem   = "Expected system '%s', got '%s'"
+	errExpectedMaxTurns = "Expected max_turns %d, got %d"
 	errFailedToLoad     = "Failed to load config: %v"
 	errFailedToValidate = "Failed to validate config: %v"
 )
 
 func TestLoadValidYAML(t *testing.T) {
-	cfg, err := Load("../../testdata/config/valid.yaml")
+	cfg, err := Load(tc.TestValidYAMLConfig)
 	if err != nil {
 		t.Fatalf("Failed to load valid YAML config: %v", err)
 	}
@@ -41,7 +46,7 @@ func TestLoadValidYAML(t *testing.T) {
 }
 
 func TestLoadValidJSON(t *testing.T) {
-	cfg, err := Load("../../testdata/config/valid.json")
+	cfg, err := Load(tc.TestValidJSONConfig)
 	if err != nil {
 		t.Fatalf("Failed to load valid JSON config: %v", err)
 	}
@@ -57,7 +62,7 @@ func TestLoadValidJSON(t *testing.T) {
 }
 
 func TestLoadValidTOML(t *testing.T) {
-	cfg, err := Load("../../testdata/config/valid.toml")
+	cfg, err := Load(tc.TestValidTOMLConfig)
 	if err != nil {
 		t.Fatalf("Failed to load valid TOML config: %v", err)
 	}
@@ -230,7 +235,7 @@ func TestValidatePartialConfig(t *testing.T) {
 }
 
 func TestLoadAndValidateValidConfig(t *testing.T) {
-	cfg, err := Load("../../testdata/config/valid.yaml")
+	cfg, err := Load(tc.TestValidYAMLConfig)
 	if err != nil {
 		t.Fatalf(errFailedToLoad, err)
 	}
@@ -242,7 +247,7 @@ func TestLoadAndValidateValidConfig(t *testing.T) {
 }
 
 func TestLoadAndValidateInvalidConfig(t *testing.T) {
-	cfg, err := Load("../../testdata/config/invalid.yaml")
+	cfg, err := Load(tc.TestInvalidConfig)
 	if err != nil {
 		t.Fatalf(errFailedToLoad, err)
 	}
@@ -250,5 +255,242 @@ func TestLoadAndValidateInvalidConfig(t *testing.T) {
 	err = ValidateAndSetDefaults(cfg)
 	if err == nil {
 		t.Error("Expected validation error for invalid config, got nil")
+	}
+}
+
+// Execution config tests
+
+func TestLoadExecutionConfig(t *testing.T) {
+	cfg, err := Load(tc.TestValidYAMLConfig)
+	if err != nil {
+		t.Fatalf(errFailedToLoad, err)
+	}
+
+	execConfig := cfg.GetExecutionConfig()
+	if execConfig.Engine != tc.TestExecutionEngine {
+		t.Errorf(errExpectedEngine, tc.TestExecutionEngine, execConfig.Engine)
+	}
+	if execConfig.Timeout != tc.TestExecutionTimeout {
+		t.Errorf(errExpectedTimeout, tc.TestExecutionTimeout, execConfig.Timeout)
+	}
+}
+
+func TestValidateExecutionConfigDefaults(t *testing.T) {
+	cfg := &Config{
+		Name:    tc.TestName,
+		Version: tc.TestVersion,
+		OpenAI: OpenAIConfig{
+			BaseURL: tc.TestBaseURL,
+			APIKey:  tc.TestAPIKey,
+		},
+		Execution: ExecutionConfig{
+			// Timeout is 0, should be set to max value
+		},
+	}
+
+	err := ValidateAndSetDefaults(cfg)
+	if err != nil {
+		t.Fatalf(errFailedToValidate, err)
+	}
+
+	execConfig := cfg.GetExecutionConfig()
+	// Check that timeout is set to max value (1<<63 - 1)
+	expectedTimeout := time.Duration(1<<63 - 1)
+	if execConfig.Timeout != expectedTimeout {
+		t.Errorf("Expected default timeout %v, got %v", expectedTimeout, execConfig.Timeout)
+	}
+}
+
+func TestValidateExecutionConfigPartial(t *testing.T) {
+	cfg := &Config{
+		Name:    tc.TestName,
+		Version: tc.TestVersion,
+		OpenAI: OpenAIConfig{
+			BaseURL: tc.TestBaseURL,
+			APIKey:  tc.TestAPIKey,
+		},
+		Execution: ExecutionConfig{
+			Engine:  tc.TestAltExecutionEngine,
+			Timeout: tc.TestAltExecutionTimeout,
+		},
+	}
+
+	err := ValidateAndSetDefaults(cfg)
+	if err != nil {
+		t.Fatalf(errFailedToValidate, err)
+	}
+
+	execConfig := cfg.GetExecutionConfig()
+	// Check that overridden values are preserved
+	if execConfig.Engine != tc.TestAltExecutionEngine {
+		t.Errorf(errExpectedEngine, tc.TestAltExecutionEngine, execConfig.Engine)
+	}
+	if execConfig.Timeout != tc.TestAltExecutionTimeout {
+		t.Errorf(errExpectedTimeout, tc.TestAltExecutionTimeout, execConfig.Timeout)
+	}
+}
+
+func TestSetExecutionConfig(t *testing.T) {
+	cfg := &Config{
+		Name:    tc.TestName,
+		Version: tc.TestVersion,
+		OpenAI: OpenAIConfig{
+			BaseURL: tc.TestBaseURL,
+			APIKey:  tc.TestAPIKey,
+		},
+	}
+
+	newExecConfig := ExecutionConfig{
+		Engine:  tc.TestAltExecutionEngine,
+		Timeout: tc.TestAltExecutionTimeout,
+	}
+
+	cfg.SetExecutionConfig(newExecConfig)
+
+	execConfig := cfg.GetExecutionConfig()
+	if execConfig.Engine != tc.TestAltExecutionEngine {
+		t.Errorf(errExpectedEngine, tc.TestAltExecutionEngine, execConfig.Engine)
+	}
+	if execConfig.Timeout != tc.TestAltExecutionTimeout {
+		t.Errorf(errExpectedTimeout, tc.TestAltExecutionTimeout, execConfig.Timeout)
+	}
+}
+
+// Agent config tests
+
+func TestLoadAgentConfig(t *testing.T) {
+	cfg, err := Load(tc.TestValidYAMLConfig)
+	if err != nil {
+		t.Fatalf(errFailedToLoad, err)
+	}
+
+	agentConfig := cfg.GetAgentConfig()
+	if agentConfig.System != tc.TestAgentSystem {
+		t.Errorf(errExpectedSystem, tc.TestAgentSystem, agentConfig.System)
+	}
+	if agentConfig.MaxTurns != tc.TestAgentMaxTurns {
+		t.Errorf(errExpectedMaxTurns, tc.TestAgentMaxTurns, agentConfig.MaxTurns)
+	}
+}
+
+func TestValidateAgentConfigDefaults(t *testing.T) {
+	cfg := &Config{
+		Name:    tc.TestName,
+		Version: tc.TestVersion,
+		OpenAI: OpenAIConfig{
+			BaseURL: tc.TestBaseURL,
+			APIKey:  tc.TestAPIKey,
+		},
+		Agent: AgentConfig{
+			// MaxTurns is 0, should be set to default 10
+		},
+	}
+
+	err := ValidateAndSetDefaults(cfg)
+	if err != nil {
+		t.Fatalf(errFailedToValidate, err)
+	}
+
+	agentConfig := cfg.GetAgentConfig()
+	// Check that max_turns is set to default value 10
+	if agentConfig.MaxTurns != 10 {
+		t.Errorf("Expected default max_turns %d, got %d", 10, agentConfig.MaxTurns)
+	}
+}
+
+func TestValidateAgentConfigPartial(t *testing.T) {
+	cfg := &Config{
+		Name:    tc.TestName,
+		Version: tc.TestVersion,
+		OpenAI: OpenAIConfig{
+			BaseURL: tc.TestBaseURL,
+			APIKey:  tc.TestAPIKey,
+		},
+		Agent: AgentConfig{
+			System:   tc.TestAgentSystem,
+			MaxTurns: tc.TestAgentMaxTurns,
+		},
+	}
+
+	err := ValidateAndSetDefaults(cfg)
+	if err != nil {
+		t.Fatalf(errFailedToValidate, err)
+	}
+
+	agentConfig := cfg.GetAgentConfig()
+	// Check that overridden values are preserved
+	if agentConfig.System != tc.TestAgentSystem {
+		t.Errorf(errExpectedSystem, tc.TestAgentSystem, agentConfig.System)
+	}
+	if agentConfig.MaxTurns != tc.TestAgentMaxTurns {
+		t.Errorf(errExpectedMaxTurns, tc.TestAgentMaxTurns, agentConfig.MaxTurns)
+	}
+}
+
+func TestSetAgentConfig(t *testing.T) {
+	cfg := &Config{
+		Name:    tc.TestName,
+		Version: tc.TestVersion,
+		OpenAI: OpenAIConfig{
+			BaseURL: tc.TestBaseURL,
+			APIKey:  tc.TestAPIKey,
+		},
+	}
+
+	newAgentConfig := AgentConfig{
+		System:   tc.TestAgentSystem,
+		MaxTurns: tc.TestAgentMaxTurns,
+	}
+
+	cfg.SetAgentConfig(newAgentConfig)
+
+	agentConfig := cfg.GetAgentConfig()
+	if agentConfig.System != tc.TestAgentSystem {
+		t.Errorf(errExpectedSystem, tc.TestAgentSystem, agentConfig.System)
+	}
+	if agentConfig.MaxTurns != tc.TestAgentMaxTurns {
+		t.Errorf(errExpectedMaxTurns, tc.TestAgentMaxTurns, agentConfig.MaxTurns)
+	}
+}
+
+// Combined tests
+
+func TestLoadAllConfigs(t *testing.T) {
+	cfg, err := Load(tc.TestValidYAMLConfig)
+	if err != nil {
+		t.Fatalf(errFailedToLoad, err)
+	}
+
+	// Validate all configs
+	err = ValidateAndSetDefaults(cfg)
+	if err != nil {
+		t.Fatalf("Failed to validate config: %v", err)
+	}
+
+	// Check OpenAI config
+	openAIConfig := cfg.GetOpenAIConfig()
+	if openAIConfig.BaseURL != tc.TestBaseURL {
+		t.Errorf(errExpectedBaseURL, tc.TestBaseURL, openAIConfig.BaseURL)
+	}
+	if openAIConfig.APIKey != tc.TestAPIKey {
+		t.Errorf(errExpectedAPIKey, tc.TestAPIKey, openAIConfig.APIKey)
+	}
+
+	// Check Execution config
+	execConfig := cfg.GetExecutionConfig()
+	if execConfig.Engine != tc.TestExecutionEngine {
+		t.Errorf(errExpectedEngine, tc.TestExecutionEngine, execConfig.Engine)
+	}
+	if execConfig.Timeout != tc.TestExecutionTimeout {
+		t.Errorf(errExpectedTimeout, tc.TestExecutionTimeout, execConfig.Timeout)
+	}
+
+	// Check Agent config
+	agentConfig := cfg.GetAgentConfig()
+	if agentConfig.System != tc.TestAgentSystem {
+		t.Errorf(errExpectedSystem, tc.TestAgentSystem, agentConfig.System)
+	}
+	if agentConfig.MaxTurns != tc.TestAgentMaxTurns {
+		t.Errorf(errExpectedMaxTurns, tc.TestAgentMaxTurns, agentConfig.MaxTurns)
 	}
 }
