@@ -151,6 +151,67 @@ openai:
 - `openai.defaults.max_tokens`: Default maximum tokens (default: 2048)
 - `openai.defaults.top_p`: Default nucleus sampling threshold (default: 1.0)
 
+#### Execution Configuration
+
+The execution configuration allows you to customize how bash commands are executed. This is particularly useful for running commands in different environments (Docker, Podman, etc.) or with custom wrappers.
+
+- `execution.engine`: Command prefix that gets prepended to bash commands (default: empty for local execution)
+- `execution.timeout`: Command execution timeout in seconds (default: 30)
+
+**Execution Engine Examples:**
+
+- **Local execution** (default):
+
+  ```yaml
+  execution:
+    engine: ""
+    timeout: 30
+  ```
+
+  Command `ls -la` executes as: `bash -c "ls -la"`
+
+- **Docker execution**:
+
+  ```yaml
+  execution:
+    engine: "docker run --rm -v $(pwd):/workspace -w /workspace ubuntu:latest bash -c"
+    timeout: 30
+  ```
+
+  Command `ls -la` executes as: `docker run --rm -v $(pwd):/workspace -w /workspace ubuntu:latest bash -c "ls -la"`
+
+- **Podman execution**:
+
+  ```yaml
+  execution:
+    engine: "podman run --rm --userns keep-id alpine:latest sh -c"
+    timeout: 30
+  ```
+
+  Command `ls -la` executes as: `podman run --rm --userns keep-id alpine:latest sh -c "ls -la"`
+
+- **Docker Compose execution**:
+
+  ```yaml
+  execution:
+    engine: "docker compose exec -T app bash -c"
+    timeout: 30
+  ```
+
+  Command `ls -la` executes as: `docker compose exec -T app bash -c "ls -la"`
+
+- **Custom wrapper**:
+
+  ```yaml
+  execution:
+    engine: "my-wrapper --timeout 30 --verbose bash -c"
+    timeout: 30
+  ```
+
+  Command `ls -la` executes as: `my-wrapper --timeout 30 --verbose bash -c "ls -la"`
+
+The execution engine provides maximum flexibility for running commands in different environments without requiring code changes.
+
 ## Project Structure
 
 ```bash
@@ -163,6 +224,9 @@ CLI_Agent/
 │   ├── config/           # Configuration parsing and validation
 │   │   ├── config.go     # Config loading logic
 │   │   └── config_test.go # Config unit tests
+│   ├── executor/         # Command execution engine
+│   │   ├── executor.go   # Executor interface and implementation
+│   │   └── executor_test.go # Executor unit tests
 │   ├── openai/           # OpenAI client wrapper
 │   │   ├── client.go     # Client initialization
 │   │   ├── chat.go       # Chat completions API
@@ -172,13 +236,16 @@ CLI_Agent/
 │   │   └── chat_test.go  # Chat completion unit tests
 │   ├── logger/           # Verbose logging utilities
 │   │   └── logger.go     # Structured logging implementation
+│   ├── parser/           # Bash command parser
+│   │   ├── parser.go     # Command extraction from LLM responses
+│   │   └── parser_test.go # Parser unit tests
 │   └── mocks/            # Generated mock clients for testing
 │       └── client_mock.go # GoMock generated mock
 ├── tests/                # Integration tests and test helpers
 │   ├── helpers.go        # Test helper functions
 │   └── integration/      # Integration tests
 │       ├── chat_test.go  # Chat integration tests
-│       └── models_test.go # Models integration tests
+│       ├── models_test.go # Models integration tests
 ├── testdata/             # Test fixtures and constants
 │   ├── config/           # Test configuration files
 │   │   ├── valid.yaml    # Valid YAML config
@@ -288,9 +355,13 @@ CLI_Agent/
 ├── internal/
 │   ├── config/
 │   │   └── config_test.go       # Config loading and validation tests
+│   ├── executor/
+│   │   └── executor_test.go     # Executor unit tests
 │   ├── openai/
 │   │   ├── client_test.go       # Client initialization tests
 │   │   └── chat_test.go         # Chat completion tests
+│   ├── parser/
+│   │   └── parser_test.go       # Parser unit tests
 │   └── mocks/
 │       └── client_mock.go       # GoMock generated mock client
 ├── testdata/
@@ -313,7 +384,9 @@ CLI_Agent/
 Unit tests cover individual components in isolation:
 
 - **Config Package**: Tests configuration loading, validation, and default value setting
+- **Executor Package**: Tests command execution with different engines, timeout handling, and error scenarios
 - **OpenAI Package**: Tests client initialization, request building, and error handling
+- **Parser Package**: Tests bash command extraction from LLM responses with comprehensive edge case coverage
 
 #### Mock-Based Unit Tests
 
@@ -407,6 +480,13 @@ Integration tests test the complete CLI workflow with actual API calls. These te
   - Verifies successful execution
   - Validates response is received
   - Tests with invalid configuration
+
+- **Executor**: Tests command execution with parser integration
+  - Verifies command extraction from LLM responses
+  - Tests different execution engines (local, custom)
+  - Validates timeout behavior and error handling
+  - Tests stdout/stderr capture
+  - Validates end-to-end workflow
 
 ### Test Fixtures
 
