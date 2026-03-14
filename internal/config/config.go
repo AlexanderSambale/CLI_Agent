@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"time"
 
 	"github.com/spf13/viper"
 )
@@ -16,6 +17,8 @@ type CLIConfig interface {
 	GetVerbose() bool
 	GetOpenAIConfig() OpenAIConfig
 	SetOpenAIConfig(OpenAIConfig)
+	GetExecutionConfig() ExecutionConfig
+	SetExecutionConfig(ExecutionConfig)
 }
 
 // Config represents the application configuration
@@ -27,6 +30,9 @@ type Config struct {
 
 	// OpenAI configuration
 	OpenAI OpenAIConfig `mapstructure:"openai"`
+
+	// Execution configuration
+	Execution ExecutionConfig `mapstructure:"execution"`
 }
 
 type SettingsConfig struct {
@@ -63,6 +69,15 @@ func (c *Config) SetOpenAIConfig(openAIConfig OpenAIConfig) {
 	c.OpenAI = openAIConfig
 }
 
+// GetExecutionConfig returns the execution configuration
+func (c *Config) GetExecutionConfig() ExecutionConfig {
+	return c.Execution
+}
+
+func (c *Config) SetExecutionConfig(executionConfig ExecutionConfig) {
+	c.Execution = executionConfig
+}
+
 // OpenAIConfig represents OpenAI-specific configuration
 type OpenAIConfig struct {
 	// Required fields
@@ -85,6 +100,12 @@ type Defaults struct {
 	Temperature float64 `mapstructure:"temperature"` // 0.0 – 2.0
 	MaxTokens   int     `mapstructure:"max_tokens"`
 	TopP        float64 `mapstructure:"top_p"` // 0.0 – 1.0
+}
+
+// ExecutionConfig represents command execution configuration
+type ExecutionConfig struct {
+	Engine  string        `mapstructure:"engine"`  // Command prefix (e.g., "docker run --rm ubuntu bash -c")
+	Timeout time.Duration `mapstructure:"timeout"` // timeout in seconds (default: 30)
 }
 
 // Load reads and parses the configuration file from the given path
@@ -153,6 +174,14 @@ func ValidateAndSetDefaults(c CLIConfig) error {
 	}
 
 	c.SetOpenAIConfig(config)
+
+	// Set default values for execution config if not specified to max value 64-bit signed integer
+	execConfig := c.GetExecutionConfig()
+	if execConfig.Timeout == 0 {
+		execConfig.Timeout = 1<<63 - 1
+	}
+
+	c.SetExecutionConfig(execConfig)
 
 	return nil
 }
