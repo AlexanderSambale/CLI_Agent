@@ -1,0 +1,1 @@
+Find the README.md in the current directory and list permissions
