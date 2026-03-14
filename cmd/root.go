@@ -49,6 +49,7 @@ func Execute() error {
 		fmt.Println("  chat <prompt>    - Send a chat completion request")
 		fmt.Println("  models --list    - List all available models")
 		fmt.Println("  models --get <id> - Get details for a specific model")
+		fmt.Println("  parse <text>     - Extract bash command from text using <do>...</do> tags")
 		return nil
 	}
 
@@ -57,6 +58,7 @@ func Execute() error {
 	fmt.Println("  chat <prompt>    - Send a chat completion request")
 	fmt.Println("  models --list    - List all available models")
 	fmt.Println("  models --get <id> - Get details for a specific model")
+	fmt.Println("  parse <text>     - Extract bash command from text using <do>...</do> tags")
 	return nil
 }
 
@@ -94,6 +96,8 @@ func executeSubcommand(client openai.CLIClient, subcommand string, args []string
 		return ExecuteChat(client, args)
 	case "models":
 		return ExecuteModels(client, args)
+	case "parse":
+		return ExecuteParse(args)
 	default:
 		return fmt.Errorf("unknown subcommand: %s", subcommand)
 	}
