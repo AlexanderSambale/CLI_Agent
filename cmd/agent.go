@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"cli_agent/internal/executor"
+	"cli_agent/internal/logger"
 	"cli_agent/internal/openai"
 	"cli_agent/internal/parser"
 
@@ -141,7 +142,7 @@ func ExecuteAgent(client openai.CLIClient, args []string) error {
 		log.Verbosef("LLM response length: %d characters", len(assistantMessage))
 
 		// Print the LLM output
-		fmt.Printf("\n--- (Turn %d) ---\n%s\n", turnCount, assistantMessage)
+		log.Verbosef("\n--- (Turn %d) ---\n%s\n", turnCount, assistantMessage)
 
 		// Add assistant message to history
 		messages = append(messages, openaiapi.AssistantMessage(assistantMessage))
@@ -154,11 +155,9 @@ func ExecuteAgent(client openai.CLIClient, args []string) error {
 			case parser.ErrNoBashAction:
 				log.Verbosef("No bash action found, agent finished")
 			case parser.ErrMultipleBashActions:
-				fmt.Println("\n[Agent error: multiple bash actions found]")
-				return fmt.Errorf("multiple bash actions found in response")
+				return fmt.Errorf("Agent error: multiple bash actions found in response")
 			case parser.ErrEmptyBashAction:
-				fmt.Println("\n[Agent error: empty bash action]")
-				return fmt.Errorf("empty bash action found")
+				return fmt.Errorf("Agent error: empty bash action found")
 			default:
 				return fmt.Errorf("error parsing response: %w", err)
 			}
@@ -166,14 +165,14 @@ func ExecuteAgent(client openai.CLIClient, args []string) error {
 		}
 
 		// Execute the command
-		fmt.Printf("\n--- Executing ---\n%s\n", command)
+		fmt.Printf("--- Executing ---\n%s\n", command)
 		result, err := exec.Execute(ctx, command)
 		if err != nil {
 			log.Verbosef("Command execution error: %v", err)
 		}
 
 		// Build output message
-		outputMessage := buildOutputMessage(result, err)
+		outputMessage := buildOutputMessage(result, err, log)
 
 		// Print the output
 		fmt.Printf("\n--- Output ---\n%s\n", outputMessage)
@@ -186,21 +185,20 @@ func ExecuteAgent(client openai.CLIClient, args []string) error {
 }
 
 // buildOutputMessage creates a formatted message from the execution result
-func buildOutputMessage(result *executor.Result, execErr error) string {
+func buildOutputMessage(result *executor.Result, execErr error, log logger.CLILogger) string {
 	var output string
 
 	if execErr != nil {
 		output = fmt.Sprintf("Command execution error: %v\n", execErr)
 	} else {
-		output = "Command executed successfully.\n"
+		output = ""
 	}
 
 	if result != nil {
-		output += fmt.Sprintf("Exit code: %d\n", result.ExitCode)
-		output += fmt.Sprintf("Duration: %v\n", result.Duration)
+		log.Verbosef("Duration: %v\n", result.Duration)
 
 		if result.Stdout != "" {
-			output += fmt.Sprintf("\n--- stdout ---\n%s\n", result.Stdout)
+			output += fmt.Sprintf(result.Stdout)
 		}
 		if result.Stderr != "" {
 			output += fmt.Sprintf("\n--- stderr ---\n%s\n", result.Stderr)
