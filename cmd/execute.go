@@ -20,70 +20,80 @@ func ExecuteExecute(args []string) error {
 		return err
 	}
 
-	var input string
-
-	// Check if input is provided as a command-line argument
-	if flagSet.NArg() > 0 {
-		input = flagSet.Arg(0)
-	} else {
-		// Read from stdin if no argument provided
-		scanner := bufio.NewScanner(os.Stdin)
-		var lines []string
-		for scanner.Scan() {
-			lines = append(lines, scanner.Text())
-		}
-		if err := scanner.Err(); err != nil {
-			return fmt.Errorf("error reading from stdin: %w", err)
-		}
-		input = strings.Join(lines, "\n")
-	}
-
-	// Load configuration to get execution settings
-	cfg, err := config.Load(configFile)
+	input, err := readInput(flagSet)
 	if err != nil {
-		return fmt.Errorf("failed to load configuration: %w", err)
+		return err
 	}
 
-	// Validate the configuration
-	if err := config.ValidateAndSetDefaults(cfg); err != nil {
-		return fmt.Errorf("configuration validation failed: %w", err)
+	cfg, err := loadAndValidateConfig()
+	if err != nil {
+		return err
 	}
 
-	// Get execution config
 	execConfig := cfg.GetExecutionConfig()
-
-	// Create executor
 	exec := executor.NewExecutor(&execConfig)
 
-	// Execute the command
 	ctx := context.Background()
 	result, err := exec.Execute(ctx, input)
 	if err != nil {
-		// Print result even if there was an error (e.g., non-zero exit code)
-		if result != nil {
-			if result.Stdout != "" {
-				fmt.Println(result.Stdout)
-			}
-			if result.Stderr != "" {
-				fmt.Fprintln(os.Stderr, result.Stderr)
-			}
-		}
+		printExecutionResult(result)
 		return fmt.Errorf("command execution failed: %w", err)
 	}
 
-	// Print stdout
+	printExecutionResult(result)
+	return nil
+}
+
+// readInput reads input from command-line argument or stdin
+func readInput(flagSet *pflag.FlagSet) (string, error) {
+	if flagSet.NArg() > 0 {
+		return flagSet.Arg(0), nil
+	}
+
+	return readFromStdin()
+}
+
+// readFromStdin reads all input from stdin
+func readFromStdin() (string, error) {
+	scanner := bufio.NewScanner(os.Stdin)
+	var lines []string
+	for scanner.Scan() {
+		lines = append(lines, scanner.Text())
+	}
+	if err := scanner.Err(); err != nil {
+		return "", fmt.Errorf("error reading from stdin: %w", err)
+	}
+	return strings.Join(lines, "\n"), nil
+}
+
+// loadAndValidateConfig loads and validates the configuration file
+func loadAndValidateConfig() (config.CLIConfig, error) {
+	cfg, err := config.Load(configFile)
+	if err != nil {
+		return nil, fmt.Errorf("failed to load configuration: %w", err)
+	}
+
+	if err := config.ValidateAndSetDefaults(cfg); err != nil {
+		return nil, fmt.Errorf("configuration validation failed: %w", err)
+	}
+
+	return cfg, nil
+}
+
+// printExecutionResult prints the stdout, stderr, and execution info
+func printExecutionResult(result *executor.Result) {
+	if result == nil {
+		return
+	}
+
 	if result.Stdout != "" {
 		fmt.Println(result.Stdout)
 	}
 
-	// Print stderr if present
 	if result.Stderr != "" {
 		fmt.Fprintln(os.Stderr, result.Stderr)
 	}
 
-	// Print execution info
 	fmt.Fprintf(os.Stderr, "Exit code: %d\n", result.ExitCode)
 	fmt.Fprintf(os.Stderr, "Duration: %v\n", result.Duration)
-
-	return nil
 }
