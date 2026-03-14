@@ -71,7 +71,7 @@
   go build -o cli-agent
   ```
 
-- **go test**: Standard Go testing framework (not yet implemented)
+- **go test**: Standard Go testing framework
 - **go mod**: Go module management
   - Dependencies managed via [`go.mod`](go.mod:1)
   - Vendor directory not used (go.sum for checksums)

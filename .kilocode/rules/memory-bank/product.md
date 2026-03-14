@@ -10,6 +10,8 @@ This project aims to create a CLI-driven coding agent that helps developers auto
 - **Simple Configuration**: Provides an easy-to-understand configuration system for defining coding tasks
 - **Developer Productivity**: Helps developers focus on high-level logic while the agent handles boilerplate and repetitive code
 - **OpenAI API Integration**: Provides a clean CLI interface to interact with OpenAI's chat completions and models API
+- **Command Extraction**: Extracts bash commands from LLM responses for execution
+- **Flexible Execution**: Executes commands in various environments (local, Docker, Podman, custom wrappers)
 
 ## How It Should Work
 
@@ -20,14 +22,16 @@ The CLI agent currently:
 3. Executes through a command-line interface with clear options and feedback
 4. Supports chat completions with customizable parameters (model, temperature, max tokens, top_p)
 5. Provides models listing and retrieval capabilities
+6. Extracts bash commands from text using `<do>...</do>` tags (parse command)
+7. Executes bash commands with configurable engine support (execute command)
 
 Future capabilities (planned):
 
 1. Accept configuration files that define coding tasks and patterns
 2. Process these configurations to generate or modify code
-3. Execute bash commands for file operations and system interactions
-4. Maintain conversation history for context-aware interactions
-5. Support various code generation and modification patterns
+3. Maintain conversation history for context-aware interactions
+4. Support various code generation and modification patterns
+5. Combine chat, parse, and execute for autonomous coding workflows
 
 ## User Experience Goals
 
@@ -54,13 +58,14 @@ Future capabilities (planned):
 - **Customizable Parameters**: Override default model, temperature, max tokens, and top_p via command-line flags
 - **System Messages**: Set context with system messages for chat completions
 - **Verbose Logging**: Configurable logging levels for debugging and monitoring
-- **Bash Command Parser**: Extract bash commands from LLM responses using `<do>...</do>` tags (ready for integration)
-- **Command Execution Engine**: Execute bash commands with support for multiple environments (local, Docker, Podman, custom wrappers)
+- **Bash Command Parser**: Extract bash commands from LLM responses using `<do>...</do>` tags (integrated via `parse` command)
+- **Command Execution Engine**: Execute bash commands with support for multiple environments (local, Docker, Podman, custom wrappers) via `execute` command
+- **Piped Workflow**: Combine parse and execute commands using Unix pipes for agent workflows
 
 ## Planned Capabilities
 
 - **File Operations**: Read, write, and edit files through the CLI
-- **Bash Tool Execution**: Execute bash commands for system interactions (parser and executor ready for integration)
 - **Conversation History**: Maintain context across multiple interactions
 - **Code Analysis**: Analyze existing code for context and modifications
 - **Template-Based Generation**: Use templates for consistent code generation patterns
+- **Agent Mode**: Combine chat, parse, and execute for autonomous coding

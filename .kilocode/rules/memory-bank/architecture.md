@@ -9,7 +9,9 @@ CLI_Agent/
 ├── cmd/                    # Command-line interface entry points
 │   ├── root.go            # Main CLI command definition and execution
 │   ├── chat.go            # Chat completions command
-│   └── models.go          # Models API command
+│   ├── models.go          # Models API command
+│   ├── parse.go           # Bash command parser command
+│   └── execute.go         # Command execution command
 ├── internal/              # Private application code
 │   ├── config/           # Configuration parsing and validation
 │   │   ├── config.go     # Config loading and validation logic
@@ -55,6 +57,8 @@ CLI_Agent/
    - [`root.go`](cmd/root.go): Main entry point, flag parsing, subcommand routing
    - [`chat.go`](cmd/chat.go): Chat completion command implementation
    - [`models.go`](cmd/models.go): Models listing and retrieval commands
+   - [`parse.go`](cmd/parse.go): Bash command extraction from text (no config required)
+   - [`execute.go`](cmd/execute.go): Command execution with configurable engine (requires config)
 
 2. **Configuration Layer** ([`internal/config/`](internal/config/)): Parses and validates configuration files
    - Supports YAML, JSON, and TOML formats
@@ -111,6 +115,8 @@ CLI_Agent/
 2. **Client Initialization**: Config Object → [`openai.NewClient()`](internal/openai/client.go:23) → HTTP client setup → OpenAI client creation
 3. **Chat Completion**: User input → [`ExecuteChat()`](cmd/chat.go:35) → Request building → [`CreateChatCompletion()`](internal/openai/chat.go:30) → API call → Response formatting
 4. **Models Operations**: Command parsing → [`ExecuteModels()`](cmd/models.go:30) → [`ListModels()`](internal/openai/models.go:11) or [`GetModel()`](internal/openai/models.go:25) → API call → Output formatting
+5. **Parse Command**: User input → [`ExecuteParse()`](cmd/parse.go:15) → [`parser.ExtractBashCommand()`](internal/parser/parser.go) → Command extraction → Output
+6. **Execute Command**: User input → [`ExecuteExecute()`](cmd/execute.go:17) → Config loading → [`executor.NewExecutor()`](internal/executor/executor.go) → Command execution → Result output
 
 ## Source Code Paths
 
@@ -120,6 +126,7 @@ CLI_Agent/
 - OpenAI client: [`internal/openai/`](internal/openai/)
 - Logging: [`internal/logger/logger.go`](internal/logger/logger.go:1)
 - Bash parser: [`internal/parser/parser.go`](internal/parser/parser.go:1)
+- Command executor: [`internal/executor/executor.go`](internal/executor/executor.go:1)
 - Example configuration: [`example.yaml`](example.yaml:1)
 
 ## Data Flow
@@ -129,12 +136,18 @@ User Input (CLI)
     ↓
 cmd/root.go (flag parsing)
     ↓
-cmd/chat.go or cmd/models.go (command execution)
+Subcommand routing (chat, models, parse, execute)
     ↓
-internal/openai/client.go (API interaction)
-    ↓
-internal/logger/logger.go (logging)
-    ↓
+┌─────────────┬─────────────┬─────────────┬─────────────┐
+│   chat      │   models    │   parse     │   execute   │
+│   cmd       │   cmd       │   cmd       │   cmd       │
+└─────────────┴─────────────┴─────────────┴─────────────┘
+    ↓              ↓              ↓              ↓
+openai/         openai/       parser/        executor/
+client.go      models.go     parser.go      executor.go
+    ↓              ↓              ↓              ↓
+API call       API call      Extraction     Execution
+    ↓              ↓              ↓              ↓
 Output to user
 ```
 
@@ -165,4 +178,4 @@ execution:
 
 ## Notes
 
-The architecture is designed for extensibility. The OpenAI client wrapper can be extended to support additional API endpoints (embeddings, images, etc.). The configuration system can easily accommodate new fields. The logging system provides flexibility for different verbosity levels during development and production. The bash parser is ready for integration with agent capabilities to execute commands extracted from LLM responses. The executor provides flexible command execution with support for different environments (local, Docker, Podman, custom wrappers) through configurable engine prefixes.
+The architecture is designed for extensibility. The OpenAI client wrapper can be extended to support additional API endpoints (embeddings, images, etc.). The configuration system can easily accommodate new fields. The logging system provides flexibility for different verbosity levels during development and production. The bash parser is integrated with the CLI via the `parse` command, allowing users to extract commands from LLM responses. The executor is integrated via the `execute` command, providing flexible command execution with support for different environments (local, Docker, Podman, custom wrappers) through configurable engine prefixes. The parse and execute commands can be combined using pipes for a complete agent workflow.
