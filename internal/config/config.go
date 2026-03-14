@@ -19,6 +19,8 @@ type CLIConfig interface {
 	SetOpenAIConfig(OpenAIConfig)
 	GetExecutionConfig() ExecutionConfig
 	SetExecutionConfig(ExecutionConfig)
+	GetAgentConfig() AgentConfig
+	SetAgentConfig(AgentConfig)
 }
 
 // Config represents the application configuration
@@ -33,6 +35,9 @@ type Config struct {
 
 	// Execution configuration
 	Execution ExecutionConfig `mapstructure:"execution"`
+
+	// Agent configuration
+	Agent AgentConfig `mapstructure:"agent"`
 }
 
 type SettingsConfig struct {
@@ -106,6 +111,22 @@ type Defaults struct {
 type ExecutionConfig struct {
 	Engine  string        `mapstructure:"engine"`  // Command prefix (e.g., "docker run --rm ubuntu bash -c")
 	Timeout time.Duration `mapstructure:"timeout"` // timeout in seconds (default: 30)
+}
+
+// AgentConfig represents agent-specific configuration
+type AgentConfig struct {
+	System   string `mapstructure:"system"`    // System message for agent context
+	MaxTurns int    `mapstructure:"max_turns"` // Maximum number of agent turns (default: 10)
+}
+
+// GetAgentConfig returns the agent configuration
+func (c *Config) GetAgentConfig() AgentConfig {
+	return c.Agent
+}
+
+// SetAgentConfig sets the agent configuration
+func (c *Config) SetAgentConfig(agentConfig AgentConfig) {
+	c.Agent = agentConfig
 }
 
 // Load reads and parses the configuration file from the given path
@@ -182,6 +203,14 @@ func ValidateAndSetDefaults(c CLIConfig) error {
 	}
 
 	c.SetExecutionConfig(execConfig)
+
+	// Set default values for agent config if not specified
+	agentConfig := c.GetAgentConfig()
+	if agentConfig.MaxTurns == 0 {
+		agentConfig.MaxTurns = 10
+	}
+
+	c.SetAgentConfig(agentConfig)
 
 	return nil
 }

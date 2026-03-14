@@ -76,10 +76,25 @@ func ExecuteAgent(client openai.CLIClient, args []string) error {
 		topP = cfg.GetOpenAIConfig().Defaults.TopP
 	}
 
+	// Get agent config for defaults
+	agentConfig := cfg.GetAgentConfig()
+
+	// Use command-line flag or config default for system message
+	systemMessage := agentSystem
+	if systemMessage == "" {
+		systemMessage = agentConfig.System
+	}
+
+	// Use command-line flag or config default for max turns
+	maxTurnsLimit := agentMaxTurns
+	if maxTurnsLimit == 0 {
+		maxTurnsLimit = agentConfig.MaxTurns
+	}
+
 	// Build initial messages
 	messages := []openaiapi.ChatCompletionMessageParamUnion{}
-	if agentSystem != "" {
-		messages = append(messages, openaiapi.SystemMessage(agentSystem))
+	if systemMessage != "" {
+		messages = append(messages, openaiapi.SystemMessage(systemMessage))
 	}
 	messages = append(messages, openaiapi.UserMessage(prompt))
 
@@ -89,7 +104,6 @@ func ExecuteAgent(client openai.CLIClient, args []string) error {
 	// Agent loop
 	ctx := context.Background()
 	turnCount := 0
-	maxTurnsLimit := agentMaxTurns
 
 	for {
 		// Check turn limit
