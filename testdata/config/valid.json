@@ -23,5 +23,9 @@
   "execution": {
     "engine": "",
     "timeout": "30s"
+  },
+  "agent": {
+    "system": "You are a helpful coding assistant.",
+    "max_turns": 5
   }
 }

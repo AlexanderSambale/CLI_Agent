@@ -38,3 +38,12 @@ execution:
   # Command execution timeout in seconds (optional, default: 30s)
   # 0 will be set to maximum which is several years
   timeout: 30s
+
+agent:
+  # System message for agent context (optional, default: "")
+  # This message is sent at the beginning of each agent session to set context
+  system: "You are a helpful coding assistant. Use <do>...</do> tags to wrap bash commands you want to execute."
+
+  # Maximum number of agent turns before stopping (optional, default: 10)
+  # Prevents infinite loops in case the agent doesn't terminate
+  max_turns: 10
