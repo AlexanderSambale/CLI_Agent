@@ -57,6 +57,7 @@ func Execute() error {
 		fmt.Println("  models --get <id> - Get details for a specific model")
 		fmt.Println("  parse <text>     - Extract bash command from text using <do>...</do> tags")
 		fmt.Println("  execute <command> - Execute a bash command")
+		fmt.Println("  agent <prompt>   - Run autonomous agent with chat, parse, and execute loop")
 		return nil
 	}
 
@@ -67,6 +68,7 @@ func Execute() error {
 	fmt.Println("  models --get <id> - Get details for a specific model")
 	fmt.Println("  parse <text>     - Extract bash command from text using <do>...</do> tags")
 	fmt.Println("  execute <command> - Execute a bash command")
+	fmt.Println("  agent <prompt>   - Run autonomous agent with chat, parse, and execute loop")
 	return nil
 }
 
@@ -106,6 +108,8 @@ func executeSubcommand(client openai.CLIClient, subcommand string, args []string
 		return ExecuteModels(client, args)
 	case "execute":
 		return ExecuteExecute(args)
+	case "agent":
+		return ExecuteAgent(client, args)
 	default:
 		return fmt.Errorf("unknown subcommand: %s", subcommand)
 	}
