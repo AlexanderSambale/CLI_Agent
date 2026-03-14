@@ -24,14 +24,15 @@ The CLI agent currently:
 5. Provides models listing and retrieval capabilities
 6. Extracts bash commands from text using `<do>...</do>` tags (parse command)
 7. Executes bash commands with configurable engine support (execute command)
+8. Runs autonomous agent mode combining chat, parse, and execute in a loop (agent command)
 
 Future capabilities (planned):
 
 1. Accept configuration files that define coding tasks and patterns
 2. Process these configurations to generate or modify code
-3. Maintain conversation history for context-aware interactions
-4. Support various code generation and modification patterns
-5. Combine chat, parse, and execute for autonomous coding workflows
+3. Support various code generation and modification patterns
+4. Enhanced file operations (read, write, edit files through the CLI)
+5. Code analysis capabilities for context-aware modifications
 
 ## User Experience Goals
 
@@ -61,11 +62,13 @@ Future capabilities (planned):
 - **Bash Command Parser**: Extract bash commands from LLM responses using `<do>...</do>` tags (integrated via `parse` command)
 - **Command Execution Engine**: Execute bash commands with support for multiple environments (local, Docker, Podman, custom wrappers) via `execute` command
 - **Piped Workflow**: Combine parse and execute commands using Unix pipes for agent workflows
+- **Agent Mode**: Autonomous agent loop combining chat, parse, and execute with conversation history management
+- **Agent Configuration**: Configurable system message and max turns settings for agent behavior
+- **Turn Management**: Automatic turn counting and termination conditions to prevent infinite loops
 
 ## Planned Capabilities
 
 - **File Operations**: Read, write, and edit files through the CLI
-- **Conversation History**: Maintain context across multiple interactions
 - **Code Analysis**: Analyze existing code for context and modifications
 - **Template-Based Generation**: Use templates for consistent code generation patterns
-- **Agent Mode**: Combine chat, parse, and execute for autonomous coding
+- **Enhanced Context Management**: Improved conversation history and context persistence
