@@ -24,6 +24,8 @@ Available commands:
   chat <prompt>    - Send a chat completion request
   models --list    - List all available models
   models --get <id> - Get details for a specific model
+  parse <text>     - Extract bash command from text using <do>...</do> tags
+  execute <command> - Execute a bash command
 ```
 
 ### Running with a configuration file
@@ -39,6 +41,92 @@ Or using the short flag:
 ```
 
 ## Commands
+
+### Parse
+
+Extract bash commands from text using `<do>...</do>` tags. This is useful for parsing LLM responses that contain executable commands.
+
+```bash
+./cli-agent parse "Here's the command: <do>ls -la</do>"
+```
+
+Output:
+
+```bash
+ls -la
+```
+
+You can also pipe input from stdin:
+
+```bash
+echo "Run this: <do>echo 'Hello World'</do>" | ./cli-agent parse
+```
+
+The parser supports multi-line commands and complex bash syntax:
+
+```bash
+./cli-agent parse "<do>
+for file in *.txt; do
+  echo \"Processing: \$file\"
+done
+</do>"
+```
+
+#### Parse Error Handling
+
+The parser provides clear error messages for common issues:
+
+- **No bash action found**: Input doesn't contain `<do>...</do>` tags
+- **Multiple bash actions**: Input contains more than one `<do>...</do>` block
+- **Empty bash action**: The `<do>...</do>` tags contain no command
+
+### Execute
+
+Execute bash commands with configurable engine support. This command requires a configuration file to be specified.
+
+```bash
+./cli-agent -c example.yaml execute "ls -la"
+```
+
+You can also pipe commands from stdin:
+
+```bash
+echo "echo 'Hello World'" | ./cli-agent -c example.yaml execute
+```
+
+The execute command uses the execution configuration from your config file:
+
+- **Local execution** (default): Commands run directly on your system
+- **Docker execution**: Commands run inside a Docker container
+- **Podman execution**: Commands run inside a Podman container
+- **Custom wrappers**: Commands run with custom prefixes
+
+#### Execute Output
+
+The execute command displays:
+- **stdout**: Standard output from the command
+- **stderr**: Standard error output (printed to stderr)
+- **Exit code**: The command's exit code
+- **Duration**: Execution time
+
+Example output:
+
+```bash
+$ ./cli-agent -c example.yaml execute "echo 'Hello World'"
+Hello World
+Exit code: 0
+Duration: 5.2ms
+```
+
+#### Execute with Parse
+
+You can combine parse and execute using pipes:
+
+```bash
+./cli-agent parse "Run this: <do>echo 'Hello World'</do>" | ./cli-agent -c example.yaml execute
+```
+
+This allows you to extract commands from LLM responses and execute them in a single workflow.
 
 ### Chat Completions
 
@@ -219,7 +307,9 @@ CLI_Agent/
 ├── cmd/                    # Command-line interface entry points
 │   ├── root.go            # Main CLI command definition
 │   ├── chat.go            # Chat completions command
-│   └── models.go          # Models API command
+│   ├── models.go          # Models API command
+│   ├── parse.go           # Bash command parser command
+│   └── execute.go         # Command execution command
 ├── internal/              # Private application code
 │   ├── config/           # Configuration parsing and validation
 │   │   ├── config.go     # Config loading logic
