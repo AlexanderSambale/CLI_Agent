@@ -1,11 +1,9 @@
 package cmd
 
 import (
-	"bufio"
 	"context"
 	"fmt"
 	"os"
-	"strings"
 
 	"cli_agent/internal/config"
 	"cli_agent/internal/executor"
@@ -42,28 +40,6 @@ func ExecuteExecute(args []string) error {
 
 	printExecutionResult(result)
 	return nil
-}
-
-// readInput reads input from command-line argument or stdin
-func readInput(flagSet *pflag.FlagSet) (string, error) {
-	if flagSet.NArg() > 0 {
-		return flagSet.Arg(0), nil
-	}
-
-	return readFromStdin()
-}
-
-// readFromStdin reads all input from stdin
-func readFromStdin() (string, error) {
-	scanner := bufio.NewScanner(os.Stdin)
-	var lines []string
-	for scanner.Scan() {
-		lines = append(lines, scanner.Text())
-	}
-	if err := scanner.Err(); err != nil {
-		return "", fmt.Errorf("error reading from stdin: %w", err)
-	}
-	return strings.Join(lines, "\n"), nil
 }
 
 // loadAndValidateConfig loads and validates the configuration file

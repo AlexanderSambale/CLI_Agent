@@ -1,10 +1,7 @@
 package cmd
 
 import (
-	"bufio"
 	"fmt"
-	"os"
-	"strings"
 
 	"cli_agent/internal/parser"
 
@@ -18,22 +15,10 @@ func ExecuteParse(args []string) error {
 		return err
 	}
 
-	var input string
-
-	// Check if input is provided as a command-line argument
-	if flagSet.NArg() > 0 {
-		input = flagSet.Arg(0)
-	} else {
-		// Read from stdin if no argument provided
-		scanner := bufio.NewScanner(os.Stdin)
-		var lines []string
-		for scanner.Scan() {
-			lines = append(lines, scanner.Text())
-		}
-		if err := scanner.Err(); err != nil {
-			return fmt.Errorf("error reading from stdin: %w", err)
-		}
-		input = strings.Join(lines, "\n")
+	// Get input from command-line argument or stdin
+	input, err := readInput(flagSet)
+	if err != nil {
+		return err
 	}
 
 	// Extract bash command from input
