@@ -35,6 +35,6 @@ execution:
   #   - Custom wrapper: "my-wrapper --timeout 30 --verbose bash -c"
   engine: ""
 
-  # Command execution timeout in seconds (optional, default: 30)
+  # Command execution timeout in seconds (optional, default: 30s)
   # 0 will be set to maximum which is several years
-  timeout: 30
+  timeout: 30s

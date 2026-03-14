@@ -19,5 +19,9 @@
       "max_tokens": 2048,
       "top_p": 1.0
     }
+  },
+  "execution": {
+    "engine": "",
+    "timeout": "30s"
   }
 }
