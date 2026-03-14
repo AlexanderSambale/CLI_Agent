@@ -14,6 +14,9 @@ CLI_Agent/
 │   ├── config/           # Configuration parsing and validation
 │   │   ├── config.go     # Config loading and validation logic
 │   │   └── config_test.go # Config unit tests
+│   ├── executor/         # Command execution engine
+│   │   ├── executor.go   # Executor interface and implementation
+│   │   └── executor_test.go # Executor unit tests
 │   ├── openai/           # OpenAI client wrapper
 │   │   ├── client.go     # Client initialization and configuration
 │   │   ├── chat.go       # Chat completions API
@@ -75,6 +78,13 @@ CLI_Agent/
    - Supports multi-line commands and complex bash syntax
    - Comprehensive error handling for edge cases
    - 100+ test cases covering various bash command patterns
+
+6. **Executor** ([`internal/executor/`](internal/executor/)): Command execution engine for agent capabilities
+   - [`executor.go`](internal/executor/executor.go): Executes bash commands with configurable engine prefix
+   - Supports local execution, Docker, Podman, and custom wrapper engines
+   - Configurable timeout with context cancellation support
+   - Captures stdout, stderr, exit codes, and execution duration
+   - Comprehensive test coverage (20+ test cases)
 
 ## Key Technical Decisions
 
@@ -148,8 +158,11 @@ openai:
     temperature: float64 # Default temperature
     max_tokens: int      # Default max tokens
     top_p: float64       # Default top_p
+execution:
+  engine: string         # Command execution engine prefix (optional)
+  timeout: int           # Command execution timeout in seconds (default: 30)
 ```
 
 ## Notes
 
-The architecture is designed for extensibility. The OpenAI client wrapper can be extended to support additional API endpoints (embeddings, images, etc.). The configuration system can easily accommodate new fields. The logging system provides flexibility for different verbosity levels during development and production. The bash parser is ready for integration with agent capabilities to execute commands extracted from LLM responses.
+The architecture is designed for extensibility. The OpenAI client wrapper can be extended to support additional API endpoints (embeddings, images, etc.). The configuration system can easily accommodate new fields. The logging system provides flexibility for different verbosity levels during development and production. The bash parser is ready for integration with agent capabilities to execute commands extracted from LLM responses. The executor provides flexible command execution with support for different environments (local, Docker, Podman, custom wrappers) through configurable engine prefixes.

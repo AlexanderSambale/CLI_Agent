@@ -14,6 +14,7 @@ The project has evolved from initial planning to a functional CLI client for Ope
 - Mock client generation using GoMock
 - Test fixtures and helper functions
 - Bash command parser for extracting commands from LLM responses
+- Command execution engine with support for multiple environments (local, Docker, Podman, custom wrappers)
 - Comprehensive testing plans and implementation plans
 
 ## Recent Changes
@@ -31,6 +32,11 @@ The project has evolved from initial planning to a functional CLI client for Ope
 - Created test fixtures and constants for consistent test data
 - Added test helpers for CLI command execution
 - Implemented bash command parser ([`internal/parser/parser.go`](internal/parser/parser.go:1)) with comprehensive test coverage
+- Implemented command execution engine ([`internal/executor/executor.go`](internal/executor/executor.go:1)) with support for multiple environments
+- Added execution configuration to config system with engine prefix and timeout settings
+- Created comprehensive test suite for executor (20+ test cases)
+- Updated example.yaml with execution configuration examples
+- Updated README with execution engine documentation
 - Created detailed implementation plans for bash parser and mock responses integration
 - Created comprehensive testing plan document
 - Added GoMock dependency for advanced mocking capabilities
@@ -40,7 +46,7 @@ The project has evolved from initial planning to a functional CLI client for Ope
 The project is in a functional state with core features and testing infrastructure implemented. Potential areas for expansion:
 
 1. Implement conversation history management
-2. Implement bash tool execution for agent capabilities (parser is ready)
+2. Integrate bash parser and executor for agent capabilities (both components are ready)
 3. Add additional test coverage for edge cases
 4. Implement retry logic in HTTP client
 5. Integrate mock responses into test files (plan documented)
@@ -49,7 +55,7 @@ The project is in a functional state with core features and testing infrastructu
 ## Project Status
 
 **Phase**: Agent Infrastructure Development
-**Progress**: ~80% - Basic CLI client functional with comprehensive tests, bash parser implemented, agent features partially implemented
+**Progress**: ~85% - Basic CLI client functional with comprehensive tests, bash parser and executor implemented, agent features partially implemented
 **Blockers**: None identified
 
 ## Key Features Implemented
@@ -65,5 +71,7 @@ The project is in a functional state with core features and testing infrastructu
 - Mock client generation using GoMock
 - Test fixtures and helper functions
 - Bash command parser with `<do>...</do>` tag support
+- Command execution engine with support for multiple environments (local, Docker, Podman, custom wrappers)
 - Comprehensive test coverage for parser (100+ test cases)
+- Comprehensive test coverage for executor (20+ test cases)
 - Detailed implementation and testing plans

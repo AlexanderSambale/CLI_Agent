@@ -55,11 +55,12 @@ Future capabilities (planned):
 - **System Messages**: Set context with system messages for chat completions
 - **Verbose Logging**: Configurable logging levels for debugging and monitoring
 - **Bash Command Parser**: Extract bash commands from LLM responses using `<do>...</do>` tags (ready for integration)
+- **Command Execution Engine**: Execute bash commands with support for multiple environments (local, Docker, Podman, custom wrappers)
 
 ## Planned Capabilities
 
 - **File Operations**: Read, write, and edit files through the CLI
-- **Bash Tool Execution**: Execute bash commands for system interactions
+- **Bash Tool Execution**: Execute bash commands for system interactions (parser and executor ready for integration)
 - **Conversation History**: Maintain context across multiple interactions
 - **Code Analysis**: Analyze existing code for context and modifications
 - **Template-Based Generation**: Use templates for consistent code generation patterns

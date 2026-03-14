@@ -46,6 +46,15 @@
   - 100+ test cases covering various bash command patterns
   - No external dependencies (uses standard library)
 
+### Command Execution Engine
+
+- **Custom Executor** ([`internal/executor/executor.go`](internal/executor/executor.go:1)): Command execution with configurable engine prefix
+  - Supports local execution, Docker, Podman, and custom wrapper engines
+  - Configurable timeout with context cancellation support
+  - Captures stdout, stderr, exit codes, and execution duration
+  - Comprehensive test coverage (20+ test cases)
+  - No external dependencies (uses standard library)
+
 ## Development Setup
 
 ### Prerequisites
@@ -147,6 +156,8 @@
 - Mock-based unit tests using GoMock
 - Test fixtures and constants for consistent test data
 - Test helpers for CLI command execution
+- Comprehensive test coverage for parser (100+ test cases)
+- Comprehensive test coverage for executor (20+ test cases)
 
 ## HTTP Client Configuration
 
@@ -160,4 +171,4 @@ Note: Retry logic is configured but not yet implemented in the client wrapper.
 
 ## Notes
 
-The technology stack is stable and well-maintained. All dependencies are actively maintained and have good community support. The project uses minimal external dependencies to keep the binary size small and reduce attack surface. Future additions may include template engines, code analysis tools, and testing frameworks as the agent capabilities expand. The bash parser is implemented without external dependencies using Go's standard library, making it lightweight and efficient.
+The technology stack is stable and well-maintained. All dependencies are actively maintained and have good community support. The project uses minimal external dependencies to keep the binary size small and reduce attack surface. Future additions may include template engines, code analysis tools, and testing frameworks as the agent capabilities expand. The bash parser is implemented without external dependencies using Go's standard library, making it lightweight and efficient. The executor is also implemented without external dependencies using Go's standard library, providing flexible command execution with support for different environments.
