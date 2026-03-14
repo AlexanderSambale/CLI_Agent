@@ -26,6 +26,7 @@ Available commands:
   models --get <id> - Get details for a specific model
   parse <text>     - Extract bash command from text using <do>...</do> tags
   execute <command> - Execute a bash command
+  agent <prompt>   - Run autonomous agent with chat, parse, and execute loop
 ```
 
 ### Running with a configuration file
@@ -104,6 +105,7 @@ The execute command uses the execution configuration from your config file:
 #### Execute Output
 
 The execute command displays:
+
 - **stdout**: Standard output from the command
 - **stderr**: Standard error output (printed to stderr)
 - **Exit code**: The command's exit code
@@ -127,6 +129,71 @@ You can combine parse and execute using pipes:
 ```
 
 This allows you to extract commands from LLM responses and execute them in a single workflow.
+
+### Agent
+
+Run an autonomous agent that combines chat, parse, and execute in a loop. The agent manages conversation history and can execute bash commands extracted from LLM responses.
+
+```bash
+./cli-agent -c example.yaml agent "Create a simple Python script that prints 'Hello World'"
+```
+
+The agent will:
+
+1. Send your prompt to the OpenAI API
+2. Parse the response for bash commands wrapped in `<do>...</do>` tags
+3. Execute any found commands
+4. Feed the execution results back to the LLM
+5. Repeat until no more commands are found or max turns is reached
+
+#### Agent Configuration
+
+The agent behavior is controlled by the `agent` section in your configuration file:
+
+```yaml
+agent:
+  system: "You are a helpful coding assistant. Use <do>...</do> tags to wrap bash commands you want to execute."
+  max_turns: 10
+```
+
+- `agent.system`: System message sent at the beginning of each agent session to set context (default: "")
+- `agent.max_turns`: Maximum number of agent turns before stopping (default: 10)
+
+#### Agent Workflow
+
+The agent follows this workflow:
+
+1. **Initialization**: Send the system message (if configured) to establish context
+2. **Turn Loop**:
+   - Send the current prompt/conversation to the LLM
+   - Parse the response for bash commands using `<do>...</do>` tags
+   - If a command is found:
+     - Execute the command using the configured execution engine
+     - Capture stdout, stderr, exit code, and duration
+     - Feed the execution results back to the LLM as context
+     - Increment turn counter
+   - If no command is found or max turns reached:
+     - Terminate the loop
+3. **Output**: Display the final LLM response
+
+#### Agent Use Cases
+
+The agent mode is particularly useful for:
+
+- **Automated coding tasks**: Let the agent write, test, and iterate on code
+- **File operations**: Create, read, modify files through natural language
+- **System administration**: Execute commands and analyze results
+- **Debugging**: Run tests, check logs, and fix issues iteratively
+- **Exploratory analysis**: Run commands and analyze results in a loop
+
+#### Agent Safety
+
+The agent includes several safety features:
+
+- **Turn limit**: Prevents infinite loops with configurable max turns
+- **Command validation**: All commands are parsed and validated before execution
+- **Execution timeout**: Commands are terminated if they exceed the configured timeout
+- **Error handling**: Execution errors are captured and fed back to the LLM for recovery
 
 ### Chat Completions
 
@@ -239,6 +306,20 @@ openai:
 - `openai.defaults.max_tokens`: Default maximum tokens (default: 2048)
 - `openai.defaults.top_p`: Default nucleus sampling threshold (default: 1.0)
 
+#### Agent Configuration
+
+The agent configuration controls the autonomous agent behavior:
+
+- `agent.system`: System message for agent context (default: "")
+  - This message is sent at the beginning of each agent session to set context
+  - Use this to define the agent's role, behavior, and constraints
+  - Example: "You are a helpful coding assistant. Use <do>...</do> tags to wrap bash commands you want to execute."
+
+- `agent.max_turns`: Maximum number of agent turns (default: 10)
+  - Prevents infinite loops in case the agent doesn't terminate
+  - Each turn consists of: chat → parse → execute → feedback
+  - Set higher for complex tasks, lower for quick operations
+
 #### Execution Configuration
 
 The execution configuration allows you to customize how bash commands are executed. This is particularly useful for running commands in different environments (Docker, Podman, etc.) or with custom wrappers.
@@ -309,7 +390,8 @@ CLI_Agent/
 │   ├── chat.go            # Chat completions command
 │   ├── models.go          # Models API command
 │   ├── parse.go           # Bash command parser command
-│   └── execute.go         # Command execution command
+│   ├── execute.go         # Command execution command
+│   └── agent.go           # Autonomous agent command
 ├── internal/              # Private application code
 │   ├── config/           # Configuration parsing and validation
 │   │   ├── config.go     # Config loading logic
@@ -477,6 +559,7 @@ Unit tests cover individual components in isolation:
 - **Executor Package**: Tests command execution with different engines, timeout handling, and error scenarios
 - **OpenAI Package**: Tests client initialization, request building, and error handling
 - **Parser Package**: Tests bash command extraction from LLM responses with comprehensive edge case coverage
+- **Agent Package**: Tests autonomous agent loop, conversation history management, and turn counting
 
 #### Mock-Based Unit Tests
 
@@ -577,6 +660,14 @@ Integration tests test the complete CLI workflow with actual API calls. These te
   - Validates timeout behavior and error handling
   - Tests stdout/stderr capture
   - Validates end-to-end workflow
+
+- **Agent**: Tests autonomous agent workflow
+  - Verifies conversation history management across turns
+  - Tests turn counting and max turns enforcement
+  - Validates system message configuration
+  - Tests termination conditions (no command, max turns)
+  - Validates error handling and recovery
+  - Tests integration with chat, parse, and execute commands
 
 ### Test Fixtures
 
