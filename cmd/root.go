@@ -25,6 +25,12 @@ func Execute() error {
 	if flagSet.NArg() > 0 {
 		subcommand := flagSet.Arg(0)
 		// If a config file is specified, load it first
+
+		// parse subcommand doesn't require a configuration file
+		if subcommand == "parse" {
+			return ExecuteParse(flagSet.Args()[1:])
+		}
+
 		if configFile != "" {
 			client, err := initializeClient()
 			if err != nil {
@@ -92,13 +98,12 @@ func initializeClient() (openai.CLIClient, error) {
 
 // executeSubcommand executes the specified subcommand
 func executeSubcommand(client openai.CLIClient, subcommand string, args []string) error {
+	// parse is executed earlier
 	switch subcommand {
 	case "chat":
 		return ExecuteChat(client, args)
 	case "models":
 		return ExecuteModels(client, args)
-	case "parse":
-		return ExecuteParse(args)
 	case "execute":
 		return ExecuteExecute(args)
 	default:
