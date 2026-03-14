@@ -18,6 +18,19 @@
       ]
     },
     {
+      "name": "Simple Agent",
+      "type": "go",
+      "request": "launch",
+      "mode": "auto",
+      "program": "main.go",
+      "args": [
+        "-c",
+        "${input:configfile}",
+        "agent",
+        "Print 'Hello World' in bash"
+      ]
+    },
+    {
       "name": "Launch cli",
       "type": "go",
       "request": "launch",
