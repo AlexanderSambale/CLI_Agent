@@ -18,12 +18,25 @@ openai:
     max_retries: 3            # Maximum number of retries
     retry_delay: 1000         # Delay between retries in milliseconds
 
-  # Default parameters for API requests
-  defaults:
-    model: "glm-4.7"
-    temperature: 0.7
-    max_tokens: 2048
-    top_p: 1.0
+# Model configuration
+model:
+  # Model to use for chat and agent (optional, default: "glm-4.7")
+  model: "glm-4.7"
+
+  # Sampling temperature (optional, default: 0.7)
+  # 0.0 - 2.0, higher values make output more random
+  temperature: 0.7
+
+  # Maximum tokens to generate (optional, default: 128000)
+  max_tokens: 2048
+
+  # Nucleus sampling threshold (optional, default: 1.0)
+  # 0.0 - 1.0, lower values make output more focused
+  top_p: 1.0
+
+  # System message for chat/agent context (optional, default: "")
+  # This message is sent at the beginning of each session to set context
+  system: "You are a helpful coding assistant. Use <do>...</do> tags to wrap bash commands you want to execute."
 
 execution:
   # Command execution engine (optional, default: empty for local execution)
@@ -40,10 +53,6 @@ execution:
   timeout: 30s
 
 agent:
-  # System message for agent context (optional, default: "")
-  # This message is sent at the beginning of each agent session to set context
-  system: "You are a helpful coding assistant. Use <do>...</do> tags to wrap bash commands you want to execute."
-
   # Maximum number of agent turns before stopping (optional, default: 10)
   # Prevents infinite loops in case the agent doesn't terminate
   max_turns: 10
