@@ -3,7 +3,6 @@ package executor
 import (
 	"bytes"
 	"context"
-	"fmt"
 	"os"
 	"os/exec"
 	"strings"
@@ -96,9 +95,6 @@ func (e *executor) Execute(ctx context.Context, command string) (*Result, error)
 	if err != nil {
 		if exitErr, ok := err.(*exec.ExitError); ok {
 			result.ExitCode = exitErr.ExitCode()
-		} else if ctx.Err() == context.DeadlineExceeded {
-			result.ExitCode = -1
-			return result, fmt.Errorf("command execution timed out after %v", e.timeout)
 		} else {
 			result.ExitCode = -1
 		}

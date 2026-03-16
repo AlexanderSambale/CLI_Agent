@@ -60,33 +60,33 @@ func ExecuteAgent(client openai.CLIClient, args []string) error {
 	log := client.GetLogger()
 
 	// Use config defaults if not specified
+	modelConfig := cfg.GetModelConfig()
+	agentConfig := cfg.GetAgentConfig()
+
 	model := agentModel
 	if model == "" {
-		model = cfg.GetOpenAIConfig().Defaults.Model
+		model = modelConfig.Model
 	}
 
 	temperature := agentTemperature
 	if temperature == 0 {
-		temperature = cfg.GetOpenAIConfig().Defaults.Temperature
+		temperature = modelConfig.Temperature
 	}
 
 	maxTokens := agentMaxTokens
 	if maxTokens == 0 {
-		maxTokens = cfg.GetOpenAIConfig().Defaults.MaxTokens
+		maxTokens = modelConfig.MaxTokens
 	}
 
 	topP := agentTopP
 	if topP == 0 {
-		topP = cfg.GetOpenAIConfig().Defaults.TopP
+		topP = modelConfig.TopP
 	}
-
-	// Get agent config for defaults
-	agentConfig := cfg.GetAgentConfig()
 
 	// Use command-line flag or config default for system message
 	systemMessage := agentSystem
 	if systemMessage == "" {
-		systemMessage = agentConfig.System
+		systemMessage = modelConfig.System
 	}
 
 	// Use command-line flag or config default for max turns
@@ -201,7 +201,7 @@ func buildOutputMessage(result *executor.Result, execErr error, log logger.CLILo
 		log.Verbosef("Duration: %v\n", result.Duration)
 
 		if result.Stdout != "" {
-			output += fmt.Sprintf(result.Stdout)
+			output += result.Stdout
 		}
 		if result.Stderr != "" {
 			output += fmt.Sprintf("\n--- stderr ---\n%s\n", result.Stderr)

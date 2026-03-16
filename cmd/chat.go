@@ -52,24 +52,31 @@ func ExecuteChat(client openai.CLIClient, args []string) error {
 
 	// Use config defaults if not specified
 	cfg := client.GetCLIConfig()
+	modelConfig := cfg.GetModelConfig()
+	
 	model := chatModel
 	if model == "" {
-		model = cfg.GetOpenAIConfig().Defaults.Model
+		model = modelConfig.Model
 	}
 
 	temperature := chatTemperature
 	if temperature == 0 {
-		temperature = cfg.GetOpenAIConfig().Defaults.Temperature
+		temperature = modelConfig.Temperature
 	}
 
 	maxTokens := chatMaxTokens
 	if maxTokens == 0 {
-		maxTokens = cfg.GetOpenAIConfig().Defaults.MaxTokens
+		maxTokens = modelConfig.MaxTokens
 	}
 
 	topP := chatTopP
 	if topP == 0 {
-		topP = cfg.GetOpenAIConfig().Defaults.TopP
+		topP = modelConfig.TopP
+	}
+	
+	// Use config system message if not specified
+	if chatSystem == "" {
+		chatSystem = modelConfig.System
 	}
 
 	// Create request
