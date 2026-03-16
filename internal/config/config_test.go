@@ -180,18 +180,19 @@ func TestValidateDefaultValues(t *testing.T) {
 		t.Errorf("Expected default retry_delay %d, got %d", tc.TestRetryDelay, openAIConfig.HTTPClient.RetryDelay)
 	}
 
+	modelConfig := cfg.GetModelConfig()
 	// Check defaults
-	if openAIConfig.Defaults.Model != tc.TestModel {
-		t.Errorf("Expected default model '%s', got '%s'", tc.TestModel, openAIConfig.Defaults.Model)
+	if modelConfig.Model != tc.TestModel {
+		t.Errorf("Expected default model '%s', got '%s'", tc.TestModel, modelConfig.Model)
 	}
-	if openAIConfig.Defaults.Temperature != tc.TestTemperature {
-		t.Errorf("Expected default temperature %f, got %f", tc.TestTemperature, openAIConfig.Defaults.Temperature)
+	if modelConfig.Temperature != tc.TestTemperature {
+		t.Errorf("Expected default temperature %f, got %f", tc.TestTemperature, modelConfig.Temperature)
 	}
-	if openAIConfig.Defaults.MaxTokens != tc.TestMaxTokens {
-		t.Errorf("Expected default max_tokens %d, got %d", tc.TestMaxTokens, openAIConfig.Defaults.MaxTokens)
+	if modelConfig.MaxTokens != tc.TestMaxTokens {
+		t.Errorf("Expected default max_tokens %d, got %d", tc.TestMaxTokens, modelConfig.MaxTokens)
 	}
-	if openAIConfig.Defaults.TopP != tc.TestTopP {
-		t.Errorf("Expected default top_p %f, got %f", tc.TestTopP, openAIConfig.Defaults.TopP)
+	if modelConfig.TopP != tc.TestTopP {
+		t.Errorf("Expected default top_p %f, got %f", tc.TestTopP, modelConfig.TopP)
 	}
 }
 
@@ -205,9 +206,9 @@ func TestValidatePartialConfig(t *testing.T) {
 			HTTPClient: &HTTPClient{
 				Timeout: tc.TestAltTimeout, // Override default
 			},
-			Defaults: &Defaults{
-				Model: tc.TestAltModel, // Override default
-			},
+		},
+		Model: ModelConfig{
+			Model: tc.TestAltModel, // Override default
 		},
 	}
 
@@ -221,16 +222,17 @@ func TestValidatePartialConfig(t *testing.T) {
 	if openAIConfig.HTTPClient.Timeout != tc.TestAltTimeout {
 		t.Errorf("Expected timeout %d, got %d", tc.TestAltTimeout, openAIConfig.HTTPClient.Timeout)
 	}
-	if openAIConfig.Defaults.Model != tc.TestAltModel {
-		t.Errorf("Expected model '%s', got '%s'", tc.TestAltModel, openAIConfig.Defaults.Model)
+	modelConfig := cfg.GetModelConfig()
+	if modelConfig.Model != tc.TestAltModel {
+		t.Errorf("Expected model '%s', got '%s'", tc.TestAltModel, modelConfig.Model)
 	}
 
 	// Check that defaults are still set for non-overridden values
 	if openAIConfig.HTTPClient.MaxRetries != 0 {
 		t.Errorf("Expected max_retries %d, got %d", 0, openAIConfig.HTTPClient.MaxRetries)
 	}
-	if openAIConfig.Defaults.Temperature != 0 {
-		t.Errorf("Expected temperature %f, got %f", 0.0, openAIConfig.Defaults.Temperature)
+	if modelConfig.Temperature != 0.0 {
+		t.Errorf("Expected temperature %f, got %f", 0.0, modelConfig.Temperature)
 	}
 }
 
@@ -365,8 +367,9 @@ func TestLoadAgentConfig(t *testing.T) {
 	}
 
 	agentConfig := cfg.GetAgentConfig()
-	if agentConfig.System != tc.TestAgentSystem {
-		t.Errorf(errExpectedSystem, tc.TestAgentSystem, agentConfig.System)
+	modelConfig := cfg.GetModelConfig()
+	if modelConfig.System != tc.TestAgentSystem {
+		t.Errorf(errExpectedSystem, tc.TestAgentSystem, modelConfig.System)
 	}
 	if agentConfig.MaxTurns != tc.TestAgentMaxTurns {
 		t.Errorf(errExpectedMaxTurns, tc.TestAgentMaxTurns, agentConfig.MaxTurns)
@@ -407,8 +410,10 @@ func TestValidateAgentConfigPartial(t *testing.T) {
 			APIKey:  tc.TestAPIKey,
 		},
 		Agent: AgentConfig{
-			System:   tc.TestAgentSystem,
 			MaxTurns: tc.TestAgentMaxTurns,
+		},
+		Model: ModelConfig{
+			System: tc.TestAgentSystem,
 		},
 	}
 
@@ -418,9 +423,10 @@ func TestValidateAgentConfigPartial(t *testing.T) {
 	}
 
 	agentConfig := cfg.GetAgentConfig()
+	modelConfig := cfg.GetModelConfig()
 	// Check that overridden values are preserved
-	if agentConfig.System != tc.TestAgentSystem {
-		t.Errorf(errExpectedSystem, tc.TestAgentSystem, agentConfig.System)
+	if modelConfig.System != tc.TestAgentSystem {
+		t.Errorf(errExpectedSystem, tc.TestAgentSystem, modelConfig.System)
 	}
 	if agentConfig.MaxTurns != tc.TestAgentMaxTurns {
 		t.Errorf(errExpectedMaxTurns, tc.TestAgentMaxTurns, agentConfig.MaxTurns)
@@ -438,15 +444,19 @@ func TestSetAgentConfig(t *testing.T) {
 	}
 
 	newAgentConfig := AgentConfig{
-		System:   tc.TestAgentSystem,
 		MaxTurns: tc.TestAgentMaxTurns,
+	}
+	newModelConfig := ModelConfig{
+		System: tc.TestAgentSystem,
 	}
 
 	cfg.SetAgentConfig(newAgentConfig)
+	cfg.SetModelConfig(newModelConfig)
 
 	agentConfig := cfg.GetAgentConfig()
-	if agentConfig.System != tc.TestAgentSystem {
-		t.Errorf(errExpectedSystem, tc.TestAgentSystem, agentConfig.System)
+	modelConfig := cfg.GetModelConfig()
+	if modelConfig.System != tc.TestAgentSystem {
+		t.Errorf(errExpectedSystem, tc.TestAgentSystem, modelConfig.System)
 	}
 	if agentConfig.MaxTurns != tc.TestAgentMaxTurns {
 		t.Errorf(errExpectedMaxTurns, tc.TestAgentMaxTurns, agentConfig.MaxTurns)
@@ -487,8 +497,9 @@ func TestLoadAllConfigs(t *testing.T) {
 
 	// Check Agent config
 	agentConfig := cfg.GetAgentConfig()
-	if agentConfig.System != tc.TestAgentSystem {
-		t.Errorf(errExpectedSystem, tc.TestAgentSystem, agentConfig.System)
+	modelConfig := cfg.GetModelConfig()
+	if modelConfig.System != tc.TestAgentSystem {
+		t.Errorf(errExpectedSystem, tc.TestAgentSystem, modelConfig.System)
 	}
 	if agentConfig.MaxTurns != tc.TestAgentMaxTurns {
 		t.Errorf(errExpectedMaxTurns, tc.TestAgentMaxTurns, agentConfig.MaxTurns)

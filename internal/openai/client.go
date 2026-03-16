@@ -81,10 +81,11 @@ func NewClient(cfg config.CLIConfig, log logger.CLILogger) (CLIClient, error) {
 	return &Client{
 		Client: client,
 		config: &config.Config{
-			Name:     cfg.GetName(),
-			Version:  cfg.GetVersion(),
-			Settings: config.SettingsConfig{Debug: cfg.GetDebug(), Verbose: cfg.GetVerbose()},
-			OpenAI:   OpenAIConfig,
+			Name:      cfg.GetName(),
+			Version:   cfg.GetVersion(),
+			Settings:  config.SettingsConfig{Debug: cfg.GetDebug(), Verbose: cfg.GetVerbose()},
+			OpenAI:    OpenAIConfig,
+			Model:     cfg.GetModelConfig(),
 			Execution: cfg.GetExecutionConfig(),
 			Agent:     cfg.GetAgentConfig(),
 		},

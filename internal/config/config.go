@@ -17,6 +17,8 @@ type CLIConfig interface {
 	GetVerbose() bool
 	GetOpenAIConfig() OpenAIConfig
 	SetOpenAIConfig(OpenAIConfig)
+	GetModelConfig() ModelConfig
+	SetModelConfig(ModelConfig)
 	GetExecutionConfig() ExecutionConfig
 	SetExecutionConfig(ExecutionConfig)
 	GetAgentConfig() AgentConfig
@@ -32,6 +34,9 @@ type Config struct {
 
 	// OpenAI configuration
 	OpenAI OpenAIConfig `mapstructure:"openai"`
+
+	// Model configuration
+	Model ModelConfig `mapstructure:"model"`
 
 	// Execution configuration
 	Execution ExecutionConfig `mapstructure:"execution"`
@@ -74,6 +79,15 @@ func (c *Config) SetOpenAIConfig(openAIConfig OpenAIConfig) {
 	c.OpenAI = openAIConfig
 }
 
+// GetModelConfig returns the model configuration
+func (c *Config) GetModelConfig() ModelConfig {
+	return c.Model
+}
+
+func (c *Config) SetModelConfig(modelConfig ModelConfig) {
+	c.Model = modelConfig
+}
+
 // GetExecutionConfig returns the execution configuration
 func (c *Config) GetExecutionConfig() ExecutionConfig {
 	return c.Execution
@@ -89,7 +103,6 @@ type OpenAIConfig struct {
 	BaseURL    string      `mapstructure:"base_url"`
 	APIKey     string      `mapstructure:"api_key"`
 	HTTPClient *HTTPClient `mapstructure:"http_client"`
-	Defaults   *Defaults   `mapstructure:"defaults"`
 }
 
 // HTTP client options
@@ -99,12 +112,13 @@ type HTTPClient struct {
 	RetryDelay int `mapstructure:"retry_delay"` // in milliseconds
 }
 
-// Default request parameters
-type Defaults struct {
+// ModelConfig represents model-specific configuration
+type ModelConfig struct {
 	Model       string  `mapstructure:"model"`
 	Temperature float64 `mapstructure:"temperature"` // 0.0 – 2.0
 	MaxTokens   int     `mapstructure:"max_tokens"`
-	TopP        float64 `mapstructure:"top_p"` // 0.0 – 1.0
+	TopP        float64 `mapstructure:"top_p"`  // 0.0 – 1.0
+	System      string  `mapstructure:"system"` // System message for chat/agent context
 }
 
 // ExecutionConfig represents command execution configuration
@@ -115,8 +129,7 @@ type ExecutionConfig struct {
 
 // AgentConfig represents agent-specific configuration
 type AgentConfig struct {
-	System   string `mapstructure:"system"`    // System message for agent context
-	MaxTurns int    `mapstructure:"max_turns"` // Maximum number of agent turns (default: 10)
+	MaxTurns int `mapstructure:"max_turns"` // Maximum number of agent turns (default: 10)
 }
 
 // GetAgentConfig returns the agent configuration
@@ -189,12 +202,25 @@ func ValidateAndSetDefaults(c CLIConfig) error {
 		config.HTTPClient = &HTTPClient{Timeout: 120, MaxRetries: 3, RetryDelay: 1000}
 	}
 
-	// Set default values for request parameters if not specified
-	if config.Defaults == nil {
-		config.Defaults = &Defaults{Model: "glm-4.7", Temperature: 0.7, MaxTokens: 128000, TopP: 1.0}
+	c.SetOpenAIConfig(config)
+
+	// Set default values for model config if not specified
+	modelConfig := c.GetModelConfig()
+
+	if modelConfig.Model == "" {
+		modelConfig.Model = "glm-4.7"
+	}
+	if modelConfig.Temperature < 0.0 || modelConfig.Temperature > 2.0 {
+		modelConfig.Temperature = 0.7
+	}
+	if modelConfig.MaxTokens < 1 {
+		modelConfig.MaxTokens = 128000
+	}
+	if modelConfig.TopP < 0.0 || modelConfig.TopP > 1.0 {
+		modelConfig.TopP = 1.0
 	}
 
-	c.SetOpenAIConfig(config)
+	c.SetModelConfig(modelConfig)
 
 	// Set default values for execution config if not specified to max value 64-bit signed integer
 	execConfig := c.GetExecutionConfig()

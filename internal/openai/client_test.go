@@ -25,12 +25,13 @@ func createTestConfig() *config.Config {
 				MaxRetries: 3,
 				RetryDelay: 1000,
 			},
-			Defaults: &config.Defaults{
-				Model:       "gpt-4",
-				Temperature: 0.7,
-				MaxTokens:   2048,
-				TopP:        1.0,
-			},
+		},
+		Model: config.ModelConfig{
+			Model:       "gpt-4",
+			Temperature: 0.7,
+			MaxTokens:   2048,
+			TopP:        1.0,
+			System:      "",
 		},
 	}
 }
