@@ -12,20 +12,20 @@
       "timeout": 120,
       "max_retries": 3,
       "retry_delay": 1000
-    },
-    "defaults": {
-      "model": "gpt-4",
-      "temperature": 0.7,
-      "max_tokens": 2048,
-      "top_p": 1.0
     }
+  },
+  "model": {
+    "model": "gpt-4",
+    "temperature": 0.7,
+    "max_tokens": 2048,
+    "top_p": 1.0,
+    "system": "You are a helpful coding assistant. Use <do>...</do> tags to wrap bash commands you want to execute."
   },
   "execution": {
     "engine": "",
     "timeout": "30s"
   },
   "agent": {
-    "system": "You are a helpful coding assistant. Use <do>...</do> tags to wrap bash commands you want to execute.",
     "max_turns": 5
   }
 }
