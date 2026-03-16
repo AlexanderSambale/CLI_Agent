@@ -38,10 +38,13 @@ func ExecuteChat(client openai.CLIClient, args []string) error {
 	}
 
 	// Get user prompt
-	if flagSet.NArg() < 1 {
-		return fmt.Errorf("prompt is required")
+	prompt, err := readInput(flagSet)
+	if err != nil {
+		return err
 	}
-	prompt := flagSet.Arg(0)
+	if prompt == "" {
+		return fmt.Errorf("no input provided")
+	}
 
 	// Build messages
 	messages := []openaiapi.ChatCompletionMessageParamUnion{}
