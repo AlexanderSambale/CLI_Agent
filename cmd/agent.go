@@ -76,35 +76,36 @@ func loadAgentConfig(client openai.CLIClient, args []string) (*agentRuntimeConfi
 	modelConfig := cfg.GetModelConfig()
 	agentConfig := cfg.GetAgentConfig()
 
+	// Use flag if changed, otherwise use config, otherwise use default
 	model := agentModel
-	if model == "" {
+	if !flagSet.Changed("model") {
 		model = modelConfig.Model
 	}
 
 	temperature := agentTemperature
-	if temperature == 0 {
+	if !flagSet.Changed("temperature") {
 		temperature = modelConfig.Temperature
 	}
 
 	maxTokens := agentMaxTokens
-	if maxTokens == 0 {
+	if !flagSet.Changed("max-tokens") {
 		maxTokens = modelConfig.MaxTokens
 	}
 
 	topP := agentTopP
-	if topP == 0 {
+	if !flagSet.Changed("top-p") {
 		topP = modelConfig.TopP
 	}
 
 	// Use command-line flag or config default for system message
 	systemMessage := agentSystem
-	if systemMessage == "" {
+	if !flagSet.Changed("system") {
 		systemMessage = modelConfig.System
 	}
 
 	// Use command-line flag or config default for max turns
 	maxTurnsLimit := agentMaxTurns
-	if maxTurnsLimit == 0 {
+	if !flagSet.Changed("max-turns") {
 		maxTurnsLimit = agentConfig.MaxTurns
 	}
 
