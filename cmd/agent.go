@@ -135,6 +135,7 @@ func loadAgentConfig(client openai.CLIClient, args []string) (*agentRuntimeConfi
 func runAgentLoop(client openai.CLIClient, cfg *agentRuntimeConfig) error {
 	ctx := context.Background()
 	turnCount := 0
+	consecutiveNoCommandTurns := 0
 
 	for {
 		// Check turn limit
@@ -180,19 +181,34 @@ func runAgentLoop(client openai.CLIClient, cfg *agentRuntimeConfig) error {
 		// Try to parse a bash command from the response
 		command, err := parser.ExtractBashCommand(assistantMessage)
 		if err != nil {
-			// No command found - agent is done
+			// Handle parsing errors
+			feedbackMessage := ""
 			switch err {
 			case parser.ErrNoBashAction:
-				cfg.logger.Verbosef("No bash action found, agent finished")
+				// No bash action found - increment counter
+				consecutiveNoCommandTurns++
+				feedbackMessage = fmt.Sprintf("No bash command was found in your response.")
+
+				// Check if this is the second consecutive turn with no command
+				if consecutiveNoCommandTurns >= 2 {
+					cfg.logger.Verbosef("No bash command found in two consecutive turns, stopping")
+					fmt.Println("\n[Agent stopped: No bash command found in two consecutive turns]")
+					return nil
+				}
 			case parser.ErrMultipleBashActions:
-				return fmt.Errorf("Agent error: multiple bash actions found in response")
+				feedbackMessage = fmt.Sprintf("Agent error: multiple bash actions found in response")
 			case parser.ErrEmptyBashAction:
-				return fmt.Errorf("Agent error: empty bash action found")
+				feedbackMessage = fmt.Sprintf("Agent error: empty bash action found")
 			default:
-				return fmt.Errorf("error parsing response: %w", err)
+				feedbackMessage = fmt.Sprintf("error parsing response: %w", err)
 			}
-			break
+			cfg.logger.Verbosef(feedbackMessage)
+			cfg.messages = append(cfg.messages, openaiapi.UserMessage(feedbackMessage))
+			continue
 		}
+
+		// Reset counter when a command is found
+		consecutiveNoCommandTurns = 0
 
 		// Execute the command
 		fmt.Printf("--- Executing ---\n%s\n", command)
