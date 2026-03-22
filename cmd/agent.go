@@ -36,20 +36,33 @@ func GetAgentCmdFlagSet() *pflag.FlagSet {
 
 }
 
-// ExecuteAgent runs the agent command
-func ExecuteAgent(client openai.CLIClient, args []string) error {
+// agentRuntimeConfig holds the configuration for the agent execution
+type agentRuntimeConfig struct {
+	model         string
+	temperature   float64
+	maxTokens     int
+	topP          float64
+	systemMessage string
+	maxTurnsLimit int
+	messages      []openaiapi.ChatCompletionMessageParamUnion
+	executor      executor.Executor
+	logger        logger.CLILogger
+}
+
+// loadAgentConfig loads and validates the agent configuration from flags and config
+func loadAgentConfig(client openai.CLIClient, args []string) (*agentRuntimeConfig, error) {
 	flagSet := GetAgentCmdFlagSet()
 	if err := flagSet.Parse(args); err != nil {
-		return err
+		return nil, err
 	}
 
 	// Get user prompt
 	prompt, err := readInput(flagSet)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	if prompt == "" {
-		return fmt.Errorf("no input provided")
+		return nil, fmt.Errorf("no input provided")
 	}
 
 	// Get config for execution settings
@@ -105,29 +118,43 @@ func ExecuteAgent(client openai.CLIClient, args []string) error {
 	// Create executor
 	exec := executor.NewExecutor(&execConfig)
 
-	// Agent loop
+	return &agentRuntimeConfig{
+		model:         model,
+		temperature:   temperature,
+		maxTokens:     maxTokens,
+		topP:          topP,
+		systemMessage: systemMessage,
+		maxTurnsLimit: maxTurnsLimit,
+		messages:      messages,
+		executor:      exec,
+		logger:        log,
+	}, nil
+}
+
+// runAgentLoop executes the agent loop with the given configuration
+func runAgentLoop(client openai.CLIClient, cfg *agentRuntimeConfig) error {
 	ctx := context.Background()
 	turnCount := 0
 
 	for {
 		// Check turn limit
-		if turnCount >= maxTurnsLimit {
-			log.Verbosef("Reached maximum turns limit (%d), stopping", maxTurnsLimit)
+		if turnCount >= cfg.maxTurnsLimit {
+			cfg.logger.Verbosef("Reached maximum turns limit (%d), stopping", cfg.maxTurnsLimit)
 			fmt.Println("\n[Agent reached maximum turns limit]")
 			break
 		}
 		turnCount++
 
-		log.Verbosef("Agent turn %d", turnCount)
-		log.Verbosef("Sending request to OpenAI with %d messages", len(messages))
+		cfg.logger.Verbosef("Agent turn %d", turnCount)
+		cfg.logger.Verbosef("Sending request to OpenAI with %d messages", len(cfg.messages))
 
 		// Create request
 		req := &openai.ChatCompletionRequest{
-			Model:       model,
-			Messages:    messages,
-			Temperature: &temperature,
-			MaxTokens:   &maxTokens,
-			TopP:        &topP,
+			Model:       cfg.model,
+			Messages:    cfg.messages,
+			Temperature: &cfg.temperature,
+			MaxTokens:   &cfg.maxTokens,
+			TopP:        &cfg.topP,
 		}
 
 		// Query the LLM
@@ -142,13 +169,13 @@ func ExecuteAgent(client openai.CLIClient, args []string) error {
 		}
 
 		assistantMessage := resp.Choices[0].Message.Content
-		log.Verbosef("LLM response length: %d characters", len(assistantMessage))
+		cfg.logger.Verbosef("LLM response length: %d characters", len(assistantMessage))
 
 		// Print the LLM output
-		log.Verbosef("\n--- (Turn %d) ---\n%s\n", turnCount, assistantMessage)
+		cfg.logger.Verbosef("\n--- (Turn %d) ---\n%s\n", turnCount, assistantMessage)
 
 		// Add assistant message to history
-		messages = append(messages, openaiapi.AssistantMessage(assistantMessage))
+		cfg.messages = append(cfg.messages, openaiapi.AssistantMessage(assistantMessage))
 
 		// Try to parse a bash command from the response
 		command, err := parser.ExtractBashCommand(assistantMessage)
@@ -156,7 +183,7 @@ func ExecuteAgent(client openai.CLIClient, args []string) error {
 			// No command found - agent is done
 			switch err {
 			case parser.ErrNoBashAction:
-				log.Verbosef("No bash action found, agent finished")
+				cfg.logger.Verbosef("No bash action found, agent finished")
 			case parser.ErrMultipleBashActions:
 				return fmt.Errorf("Agent error: multiple bash actions found in response")
 			case parser.ErrEmptyBashAction:
@@ -169,22 +196,32 @@ func ExecuteAgent(client openai.CLIClient, args []string) error {
 
 		// Execute the command
 		fmt.Printf("--- Executing ---\n%s\n", command)
-		result, err := exec.Execute(ctx, command)
+		result, err := cfg.executor.Execute(ctx, command)
 		if err != nil {
-			log.Verbosef("Command execution error: %v", err)
+			cfg.logger.Verbosef("Command execution error: %v", err)
 		}
 
 		// Build output message
-		outputMessage := buildOutputMessage(result, err, log)
+		outputMessage := buildOutputMessage(result, err, cfg.logger)
 
 		// Print the output
 		fmt.Printf("\n--- Output ---\n%s\n", outputMessage)
 
 		// Add output to message history
-		messages = append(messages, openaiapi.UserMessage(outputMessage))
+		cfg.messages = append(cfg.messages, openaiapi.UserMessage(outputMessage))
 	}
 
 	return nil
+}
+
+// ExecuteAgent runs the agent command
+func ExecuteAgent(client openai.CLIClient, args []string) error {
+	cfg, err := loadAgentConfig(client, args)
+	if err != nil {
+		return err
+	}
+
+	return runAgentLoop(client, cfg)
 }
 
 // buildOutputMessage creates a formatted message from the execution result
