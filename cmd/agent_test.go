@@ -4,7 +4,6 @@ import (
 	"cli_agent/internal/config"
 	"cli_agent/internal/logger"
 	mock_openai "cli_agent/internal/mocks"
-	tc "cli_agent/testdata/test_constants"
 	"testing"
 	"time"
 
@@ -17,6 +16,7 @@ const (
 	errExpectedNoError             = "Expected no error, got: %v"
 	errFailedToLoadTestConfig      = "Failed to load test config: %v"
 	errExpectedExecutorToBeCreated = "Expected executor to be created"
+	TestValidYAMLConfig            = "../testdata/config/valid.yaml"
 )
 
 // TestLoadAgentConfig_Success tests successful loading of agent configuration
@@ -28,7 +28,7 @@ func TestLoadAgentConfigSuccess(t *testing.T) {
 	mockClient := mock_openai.NewMockCLIClient(ctrl)
 
 	// Load test config from file
-	testConfig, err := config.Load(tc.TestValidYAMLConfig)
+	testConfig, err := config.Load(TestValidYAMLConfig)
 	if err != nil {
 		t.Fatalf(errFailedToLoadTestConfig, err)
 	}
@@ -49,23 +49,23 @@ func TestLoadAgentConfigSuccess(t *testing.T) {
 	}
 
 	// Verify configuration
-	if cfg.model != tc.TestModel {
-		t.Errorf("Expected model '%s', got '%s'", tc.TestModel, cfg.model)
+	if cfg.model != testConfig.GetModelConfig().Model {
+		t.Errorf("Expected model '%s', got '%s'", testConfig.GetModelConfig().Model, cfg.model)
 	}
-	if cfg.temperature != tc.TestTemperature {
-		t.Errorf("Expected temperature %f, got %f", tc.TestTemperature, cfg.temperature)
+	if cfg.temperature != testConfig.GetModelConfig().Temperature {
+		t.Errorf("Expected temperature %f, got %f", testConfig.GetModelConfig().Temperature, cfg.temperature)
 	}
-	if cfg.maxTokens != tc.TestMaxTokens {
-		t.Errorf("Expected maxTokens %d, got %d", tc.TestMaxTokens, cfg.maxTokens)
+	if cfg.maxTokens != testConfig.GetModelConfig().MaxTokens {
+		t.Errorf("Expected maxTokens %d, got %d", testConfig.GetModelConfig().MaxTokens, cfg.maxTokens)
 	}
-	if cfg.topP != tc.TestTopP {
-		t.Errorf("Expected topP %f, got %f", tc.TestTopP, cfg.topP)
+	if cfg.topP != testConfig.GetModelConfig().TopP {
+		t.Errorf("Expected topP %f, got %f", testConfig.GetModelConfig().TopP, cfg.topP)
 	}
-	if cfg.systemMessage != tc.TestAgentSystem {
-		t.Errorf("Expected system message '%s', got '%s'", tc.TestAgentSystem, cfg.systemMessage)
+	if cfg.systemMessage != testConfig.GetModelConfig().System {
+		t.Errorf("Expected system message '%s', got '%s'", testConfig.GetModelConfig().System, cfg.systemMessage)
 	}
-	if cfg.maxTurnsLimit != tc.TestAgentMaxTurns {
-		t.Errorf("Expected maxTurnsLimit %d, got %d", tc.TestAgentMaxTurns, cfg.maxTurnsLimit)
+	if cfg.maxTurnsLimit != testConfig.GetAgentConfig().MaxTurns {
+		t.Errorf("Expected maxTurnsLimit %d, got %d", testConfig.GetAgentConfig().MaxTurns, cfg.maxTurnsLimit)
 	}
 
 	// Verify messages count (system + user)
@@ -93,7 +93,7 @@ func TestLoadAgentConfigWithFlags(t *testing.T) {
 	mockClient := mock_openai.NewMockCLIClient(ctrl)
 
 	// Load test config from file
-	testConfig, err := config.Load(tc.TestValidYAMLConfig)
+	testConfig, err := config.Load(TestValidYAMLConfig)
 	if err != nil {
 		t.Fatalf(errFailedToLoadTestConfig, err)
 	}
@@ -158,7 +158,7 @@ func TestLoadAgentConfigNoInput(t *testing.T) {
 	mockClient := mock_openai.NewMockCLIClient(ctrl)
 
 	// Load test config from file
-	testConfig, err := config.Load(tc.TestValidYAMLConfig)
+	testConfig, err := config.Load(TestValidYAMLConfig)
 	if err != nil {
 		t.Fatalf(errFailedToLoadTestConfig, err)
 	}
@@ -191,7 +191,7 @@ func TestLoadAgentConfigNoSystemMessage(t *testing.T) {
 	mockClient := mock_openai.NewMockCLIClient(ctrl)
 
 	// Load test config from file
-	testConfig, err := config.Load(tc.TestValidYAMLConfig)
+	testConfig, err := config.Load(TestValidYAMLConfig)
 	if err != nil {
 		t.Fatalf(errFailedToLoadTestConfig, err)
 	}
@@ -234,7 +234,7 @@ func TestLoadAgentConfigWithSystemMessageFlag(t *testing.T) {
 	mockClient := mock_openai.NewMockCLIClient(ctrl)
 
 	// Load test config from file
-	testConfig, err := config.Load(tc.TestValidYAMLConfig)
+	testConfig, err := config.Load(TestValidYAMLConfig)
 	if err != nil {
 		t.Fatalf(errFailedToLoadTestConfig, err)
 	}
@@ -277,7 +277,7 @@ func TestLoadAgentConfigExecutionConfig(t *testing.T) {
 	mockClient := mock_openai.NewMockCLIClient(ctrl)
 
 	// Load test config from file
-	testConfig, err := config.Load(tc.TestValidYAMLConfig)
+	testConfig, err := config.Load(TestValidYAMLConfig)
 	if err != nil {
 		t.Fatalf(errFailedToLoadTestConfig, err)
 	}
@@ -316,7 +316,7 @@ func TestLoadAgentConfigExecutionConfigOverride(t *testing.T) {
 	mockClient := mock_openai.NewMockCLIClient(ctrl)
 
 	// Create test config with default execution settings
-	testConfig, err := config.Load(tc.TestValidYAMLConfig)
+	testConfig, err := config.Load(TestValidYAMLConfig)
 	if err != nil {
 		t.Fatalf(errFailedToLoadTestConfig, err)
 	}
@@ -355,7 +355,7 @@ func TestLoadAgentConfigAgentConfig(t *testing.T) {
 	mockClient := mock_openai.NewMockCLIClient(ctrl)
 
 	// Create test config with agent settings
-	testConfig, err := config.Load(tc.TestValidYAMLConfig)
+	testConfig, err := config.Load(TestValidYAMLConfig)
 	if err != nil {
 		t.Fatalf(errFailedToLoadTestConfig, err)
 	}
@@ -389,7 +389,7 @@ func TestLoadAgentConfigAgentConfigOverride(t *testing.T) {
 	mockClient := mock_openai.NewMockCLIClient(ctrl)
 
 	// Create test config with default agent settings
-	testConfig, err := config.Load(tc.TestValidYAMLConfig)
+	testConfig, err := config.Load(TestValidYAMLConfig)
 	if err != nil {
 		t.Fatalf(errFailedToLoadTestConfig, err)
 	}
