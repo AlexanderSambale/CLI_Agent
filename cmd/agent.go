@@ -221,7 +221,7 @@ func runAgentLoop(client openai.CLIClient, cfg *agentRuntimeConfig) error {
 			case parser.ErrEmptyBashAction:
 				feedbackMessage = fmt.Sprintf("Agent error: empty bash action found")
 			default:
-				feedbackMessage = fmt.Sprintf("error parsing response: %w", err)
+				feedbackMessage = fmt.Sprintf("error parsing response: %v", err)
 			}
 			cfg.logger.Verbosef(feedbackMessage)
 			cfg.messages = append(cfg.messages, openaiapi.UserMessage(feedbackMessage))
