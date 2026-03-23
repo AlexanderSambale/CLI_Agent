@@ -3,6 +3,7 @@ package cmd
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"cli_agent/internal/executor"
 	"cli_agent/internal/logger"
@@ -20,6 +21,8 @@ var (
 	agentTopP        float64
 	agentSystem      string
 	agentMaxTurns    int
+	agentEngine      string
+	agentTimeout     int
 )
 
 func GetAgentCmdFlagSet() *pflag.FlagSet {
@@ -31,6 +34,8 @@ func GetAgentCmdFlagSet() *pflag.FlagSet {
 	flagSet.Float64VarP(&agentTopP, "top-p", "p", 0, "Nucleus sampling threshold (0-1)")
 	flagSet.StringVarP(&agentSystem, "system", "s", "", "System message to set context")
 	flagSet.IntVarP(&agentMaxTurns, "max-turns", "x", 10, "Maximum number of agent turns before stopping")
+	flagSet.StringVarP(&agentEngine, "engine", "e", "", "Command execution engine prefix (e.g., 'docker run --rm ubuntu bash -c')")
+	flagSet.IntVarP(&agentTimeout, "timeout", "T", 0, "Command execution timeout in seconds")
 
 	return flagSet
 
@@ -109,6 +114,18 @@ func loadAgentConfig(client openai.CLIClient, args []string) (*agentRuntimeConfi
 		maxTurnsLimit = agentConfig.MaxTurns
 	}
 
+	// Use command-line flag or config default for engine
+	engine := agentEngine
+	if !flagSet.Changed("engine") {
+		engine = execConfig.Engine
+	}
+
+	// Use command-line flag or config default for timeout
+	timeout := agentTimeout
+	if !flagSet.Changed("timeout") {
+		timeout = int(execConfig.Timeout.Seconds())
+	}
+
 	// Build initial messages
 	messages := []openaiapi.ChatCompletionMessageParamUnion{}
 	if systemMessage != "" {
@@ -116,8 +133,11 @@ func loadAgentConfig(client openai.CLIClient, args []string) (*agentRuntimeConfi
 	}
 	messages = append(messages, openaiapi.UserMessage(prompt))
 
-	// Create executor
-	exec := executor.NewExecutor(&execConfig)
+	// Create executor with overridden values
+	overriddenExecConfig := execConfig
+	overriddenExecConfig.Engine = engine
+	overriddenExecConfig.Timeout = time.Duration(timeout) * time.Second
+	exec := executor.NewExecutor(&overriddenExecConfig)
 
 	return &agentRuntimeConfig{
 		model:         model,
