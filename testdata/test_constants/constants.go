@@ -10,9 +10,9 @@ const (
 	TestVersion             = "1.0.0"
 	TestName                = "Test"
 	TestModel               = "glm-4.7"
-	TestTemperature         = 0.0
+	TestTemperature         = 0.1
 	TestMaxTokens           = 128000
-	TestTopP                = 0.0
+	TestTopP                = 0.1
 	TestTimeout             = 120
 	TestMaxRetries          = 3
 	TestRetryDelay          = 1000
