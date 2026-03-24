@@ -11,26 +11,26 @@ import (
 )
 
 // readInput reads input from command-line argument or stdin
-func readInput(flagSet *pflag.FlagSet) (string, error) {
+func readInput(flagSet *pflag.FlagSet, stdin *os.File) (string, error) {
 	if flagSet.NArg() > 0 {
 		return flagSet.Arg(0), nil
 	}
 
-	return readFromStdin()
+	return readFromStdin(stdin)
 }
 
 // readFromStdin reads all input from stdin
 // Returns empty string if stdin is a terminal (not a pipe or redirected file)
-func readFromStdin() (string, error) {
+func readFromStdin(stdin *os.File) (string, error) {
 	// Check if stdin is a pipe or redirected file
-	stat, _ := os.Stdin.Stat()
+	stat, _ := stdin.Stat()
 	if (stat.Mode() & os.ModeCharDevice) != 0 {
 		// stdin is a terminal, not a pipe or file
 		return "", nil
 	}
 
 	// Read from stdin
-	reader := bufio.NewReader(os.Stdin)
+	reader := bufio.NewReader(stdin)
 	var builder strings.Builder
 
 	for {

@@ -18,7 +18,7 @@ func ExecuteExecute(args []string) error {
 		return err
 	}
 
-	input, err := readInput(flagSet)
+	input, err := readInput(flagSet, os.Stdin)
 	if err != nil {
 		return err
 	}

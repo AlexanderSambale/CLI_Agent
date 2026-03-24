@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"os"
 
 	"cli_agent/internal/parser"
 
@@ -16,7 +17,7 @@ func ExecuteParse(args []string) error {
 	}
 
 	// Get input from command-line argument or stdin
-	input, err := readInput(flagSet)
+	input, err := readInput(flagSet, os.Stdin)
 	if err != nil {
 		return err
 	}

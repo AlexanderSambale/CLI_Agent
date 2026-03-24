@@ -3,6 +3,7 @@ package cmd
 import (
 	"context"
 	"fmt"
+	"os"
 
 	"cli_agent/internal/openai"
 
@@ -38,7 +39,7 @@ func ExecuteChat(client openai.CLIClient, args []string) error {
 	}
 
 	// Get user prompt
-	prompt, err := readInput(flagSet)
+	prompt, err := readInput(flagSet, os.Stdin)
 	if err != nil {
 		return err
 	}
@@ -56,7 +57,7 @@ func ExecuteChat(client openai.CLIClient, args []string) error {
 	// Use config defaults if not specified
 	cfg := client.GetCLIConfig()
 	modelConfig := cfg.GetModelConfig()
-	
+
 	model := chatModel
 	if model == "" {
 		model = modelConfig.Model
@@ -76,7 +77,7 @@ func ExecuteChat(client openai.CLIClient, args []string) error {
 	if topP == 0 {
 		topP = modelConfig.TopP
 	}
-	
+
 	// Use config system message if not specified
 	if chatSystem == "" {
 		chatSystem = modelConfig.System
