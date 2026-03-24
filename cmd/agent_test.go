@@ -159,22 +159,17 @@ func TestLoadAgentConfigNoInput(t *testing.T) {
 	mockClient := mock_openai.NewMockCLIClient(ctrl)
 
 	// Load test config from file
-	testConfig, err := config.Load(TestValidYAMLConfig)
+	_, err := config.Load(TestValidYAMLConfig)
 	if err != nil {
 		t.Fatalf(errFailedToLoadTestConfig, err)
 	}
 
-	// Create test logger
-	testLogger := logger.NewLogger(false, false)
-
-	// Set up mock expectations
-	mockClient.EXPECT().GetCLIConfig().Return(testConfig)
-	mockClient.EXPECT().GetLogger().Return(testLogger)
-
 	// Test with no input (no arguments and stdin is a terminal)
 	args := []string{}
+	r, w, _ := os.Pipe()
+	w.Close()
 
-	_, err = loadAgentConfig(mockClient, args, os.Stdin)
+	_, err = loadAgentConfig(mockClient, args, r)
 	if err == nil {
 		t.Error("Expected error for no input, got nil")
 	}
