@@ -1,6 +1,7 @@
 package config
 
 import (
+	defaults "cli_agent/internal/constants"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -115,9 +116,9 @@ type HTTPClient struct {
 // ModelConfig represents model-specific configuration
 type ModelConfig struct {
 	Model       string  `mapstructure:"model"`
-	Temperature float64 `mapstructure:"temperature"` // 0.0 – 2.0
+	Temperature float64 `mapstructure:"temperature"` // (0.0,2.0]
 	MaxTokens   int     `mapstructure:"max_tokens"`
-	TopP        float64 `mapstructure:"top_p"`  // 0.0 – 1.0
+	TopP        float64 `mapstructure:"top_p"`  // (0.0,1.0]
 	System      string  `mapstructure:"system"` // System message for chat/agent context
 }
 
@@ -199,7 +200,7 @@ func ValidateAndSetDefaults(c CLIConfig) error {
 
 	// Set default values for HTTP client if not specified
 	if config.HTTPClient == nil {
-		config.HTTPClient = &HTTPClient{Timeout: 120, MaxRetries: 3, RetryDelay: 1000}
+		config.HTTPClient = &HTTPClient{Timeout: defaults.HttpTimeout, MaxRetries: defaults.MaxRetries, RetryDelay: defaults.RetryDelay}
 	}
 
 	c.SetOpenAIConfig(config)
@@ -208,16 +209,16 @@ func ValidateAndSetDefaults(c CLIConfig) error {
 	modelConfig := c.GetModelConfig()
 
 	if modelConfig.Model == "" {
-		modelConfig.Model = "glm-4.7"
+		modelConfig.Model = defaults.Model
 	}
-	if modelConfig.Temperature < 0.0 || modelConfig.Temperature > 2.0 {
-		modelConfig.Temperature = 0.7
+	if modelConfig.Temperature <= 0.0 || modelConfig.Temperature > 2.0 {
+		modelConfig.Temperature = defaults.Temperature
 	}
 	if modelConfig.MaxTokens < 1 {
-		modelConfig.MaxTokens = 128000
+		modelConfig.MaxTokens = defaults.MaxTokens
 	}
-	if modelConfig.TopP < 0.0 || modelConfig.TopP > 1.0 {
-		modelConfig.TopP = 1.0
+	if modelConfig.TopP <= 0.0 || modelConfig.TopP > 1.0 {
+		modelConfig.TopP = defaults.TopP
 	}
 
 	c.SetModelConfig(modelConfig)
@@ -225,7 +226,7 @@ func ValidateAndSetDefaults(c CLIConfig) error {
 	// Set default values for execution config if not specified to max value 64-bit signed integer
 	execConfig := c.GetExecutionConfig()
 	if execConfig.Timeout == 0 {
-		execConfig.Timeout = 1<<63 - 1
+		execConfig.Timeout = defaults.ExecTimeout
 	}
 
 	c.SetExecutionConfig(execConfig)
@@ -233,7 +234,7 @@ func ValidateAndSetDefaults(c CLIConfig) error {
 	// Set default values for agent config if not specified
 	agentConfig := c.GetAgentConfig()
 	if agentConfig.MaxTurns == 0 {
-		agentConfig.MaxTurns = 10
+		agentConfig.MaxTurns = defaults.MaxTurns
 	}
 
 	c.SetAgentConfig(agentConfig)
