@@ -375,8 +375,8 @@ func TestLoadAgentConfigAgentConfig(t *testing.T) {
 	}
 
 	// Verify max turns from config is used
-	if cfg.maxTurnsLimit != 20 {
-		t.Errorf("Expected maxTurnsLimit 20, got %d", cfg.maxTurnsLimit)
+	if cfg.maxTurnsLimit != 5 {
+		t.Errorf("Expected maxTurnsLimit 5, got %d", cfg.maxTurnsLimit)
 	}
 }
 
