@@ -1,6 +1,7 @@
 package config
 
 import (
+	defaults "cli_agent/internal/constants"
 	tc "cli_agent/testdata/test_constants"
 	"errors"
 	"os"
@@ -185,14 +186,14 @@ func TestValidateDefaultValues(t *testing.T) {
 	if modelConfig.Model != tc.TestModel {
 		t.Errorf("Expected default model '%s', got '%s'", tc.TestModel, modelConfig.Model)
 	}
-	if modelConfig.Temperature != tc.TestTemperature {
-		t.Errorf("Expected default temperature %f, got %f", tc.TestTemperature, modelConfig.Temperature)
+	if modelConfig.Temperature != defaults.Temperature {
+		t.Errorf("Expected default temperature %f, got %f", defaults.Temperature, modelConfig.Temperature)
 	}
 	if modelConfig.MaxTokens != tc.TestMaxTokens {
 		t.Errorf("Expected default max_tokens %d, got %d", tc.TestMaxTokens, modelConfig.MaxTokens)
 	}
-	if modelConfig.TopP != tc.TestTopP {
-		t.Errorf("Expected default top_p %f, got %f", tc.TestTopP, modelConfig.TopP)
+	if modelConfig.TopP != defaults.TopP {
+		t.Errorf("Expected default top_p %f, got %f", defaults.TopP, modelConfig.TopP)
 	}
 }
 
@@ -231,8 +232,8 @@ func TestValidatePartialConfig(t *testing.T) {
 	if openAIConfig.HTTPClient.MaxRetries != 0 {
 		t.Errorf("Expected max_retries %d, got %d", 0, openAIConfig.HTTPClient.MaxRetries)
 	}
-	if modelConfig.Temperature != 0.0 {
-		t.Errorf("Expected temperature %f, got %f", 0.0, modelConfig.Temperature)
+	if modelConfig.Temperature != defaults.Temperature {
+		t.Errorf("Expected temperature %f, got %f", defaults.Temperature, modelConfig.Temperature)
 	}
 }
 
