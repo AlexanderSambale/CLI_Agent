@@ -4,6 +4,7 @@ import (
 	"cli_agent/internal/config"
 	"cli_agent/internal/logger"
 	mock_openai "cli_agent/internal/mocks"
+	"os"
 	"testing"
 	"time"
 
@@ -43,7 +44,7 @@ func TestLoadAgentConfigSuccess(t *testing.T) {
 	// Test with command-line argument
 	args := []string{testPrompt}
 
-	cfg, err := loadAgentConfig(mockClient, args)
+	cfg, err := loadAgentConfig(mockClient, args, os.Stdin)
 	if err != nil {
 		t.Fatalf(errExpectedNoError, err)
 	}
@@ -118,7 +119,7 @@ func TestLoadAgentConfigWithFlags(t *testing.T) {
 		testPrompt,
 	}
 
-	cfg, err := loadAgentConfig(mockClient, args)
+	cfg, err := loadAgentConfig(mockClient, args, os.Stdin)
 	if err != nil {
 		t.Fatalf(errExpectedNoError, err)
 	}
@@ -173,7 +174,7 @@ func TestLoadAgentConfigNoInput(t *testing.T) {
 	// Test with no input (no arguments and stdin is a terminal)
 	args := []string{}
 
-	_, err = loadAgentConfig(mockClient, args)
+	_, err = loadAgentConfig(mockClient, args, os.Stdin)
 	if err == nil {
 		t.Error("Expected error for no input, got nil")
 	}
@@ -209,7 +210,7 @@ func TestLoadAgentConfigNoSystemMessage(t *testing.T) {
 	// Test with command-line argument
 	args := []string{testPrompt}
 
-	cfg, err := loadAgentConfig(mockClient, args)
+	cfg, err := loadAgentConfig(mockClient, args, os.Stdin)
 	if err != nil {
 		t.Fatalf(errExpectedNoError, err)
 	}
@@ -252,7 +253,7 @@ func TestLoadAgentConfigWithSystemMessageFlag(t *testing.T) {
 		testPrompt,
 	}
 
-	cfg, err := loadAgentConfig(mockClient, args)
+	cfg, err := loadAgentConfig(mockClient, args, os.Stdin)
 	if err != nil {
 		t.Fatalf(errExpectedNoError, err)
 	}
@@ -296,7 +297,7 @@ func TestLoadAgentConfigExecutionConfig(t *testing.T) {
 	// Test without overriding execution config
 	args := []string{testPrompt}
 
-	cfg, err := loadAgentConfig(mockClient, args)
+	cfg, err := loadAgentConfig(mockClient, args, os.Stdin)
 	if err != nil {
 		t.Fatalf(errExpectedNoError, err)
 	}
@@ -335,7 +336,7 @@ func TestLoadAgentConfigExecutionConfigOverride(t *testing.T) {
 		testPrompt,
 	}
 
-	cfg, err := loadAgentConfig(mockClient, args)
+	cfg, err := loadAgentConfig(mockClient, args, os.Stdin)
 	if err != nil {
 		t.Fatalf(errExpectedNoError, err)
 	}
@@ -369,7 +370,7 @@ func TestLoadAgentConfigAgentConfig(t *testing.T) {
 	// Test without overriding agent config
 	args := []string{testPrompt}
 
-	cfg, err := loadAgentConfig(mockClient, args)
+	cfg, err := loadAgentConfig(mockClient, args, os.Stdin)
 	if err != nil {
 		t.Fatalf(errExpectedNoError, err)
 	}
@@ -407,7 +408,7 @@ func TestLoadAgentConfigAgentConfigOverride(t *testing.T) {
 		testPrompt,
 	}
 
-	cfg, err := loadAgentConfig(mockClient, args)
+	cfg, err := loadAgentConfig(mockClient, args, os.Stdin)
 	if err != nil {
 		t.Fatalf(errExpectedNoError, err)
 	}

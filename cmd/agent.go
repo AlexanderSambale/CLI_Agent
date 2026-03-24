@@ -3,6 +3,7 @@ package cmd
 import (
 	"context"
 	"fmt"
+	"os"
 	"time"
 
 	"cli_agent/internal/executor"
@@ -55,14 +56,14 @@ type agentRuntimeConfig struct {
 }
 
 // loadAgentConfig loads and validates the agent configuration from flags and config
-func loadAgentConfig(client openai.CLIClient, args []string) (*agentRuntimeConfig, error) {
+func loadAgentConfig(client openai.CLIClient, args []string, stdin *os.File) (*agentRuntimeConfig, error) {
 	flagSet := GetAgentCmdFlagSet()
 	if err := flagSet.Parse(args); err != nil {
 		return nil, err
 	}
 
 	// Get user prompt
-	prompt, err := readInput(flagSet)
+	prompt, err := readInput(flagSet, stdin)
 	if err != nil {
 		return nil, err
 	}
@@ -253,7 +254,7 @@ func runAgentLoop(client openai.CLIClient, cfg *agentRuntimeConfig) error {
 
 // ExecuteAgent runs the agent command
 func ExecuteAgent(client openai.CLIClient, args []string) error {
-	cfg, err := loadAgentConfig(client, args)
+	cfg, err := loadAgentConfig(client, args, os.Stdin)
 	if err != nil {
 		return err
 	}
